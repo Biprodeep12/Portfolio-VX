@@ -1,4 +1,6 @@
+import Image from "next/image";
 import type { ReactNode } from "react";
+import type { Project } from "@/data/profile";
 
 export function Section({
   id,
@@ -82,3 +84,29 @@ export function Chips({ items }: { items: readonly string[] }) {
     </div>
   );
 }
+
+export const hostOf = (url: string) => new URL(url).host;
+
+export function BrowserFrame({ p, sizes, priority }: { p: Project; sizes: string; priority?: boolean }) {
+  return (
+    <div className="rounded-lg border border-line overflow-hidden bg-subtle">
+      <div className="flex items-center gap-1.5 h-7 px-3 border-b border-line">
+        <span className="size-2 rounded-full bg-line-strong" />
+        <span className="size-2 rounded-full bg-line-strong" />
+        <span className="size-2 rounded-full bg-line-strong" />
+        <span className="mono text-[10.5px] text-muted ml-2 truncate">{hostOf(p.url)}</span>
+      </div>
+      <div className="relative aspect-[16/10] overflow-hidden">
+        <Image
+          src={p.image}
+          alt={`${p.name} screenshot`}
+          fill
+          priority={priority}
+          sizes={sizes}
+          className="object-cover object-top transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03]"
+        />
+      </div>
+    </div>
+  );
+}
+

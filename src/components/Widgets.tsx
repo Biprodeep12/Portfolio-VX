@@ -185,7 +185,7 @@ export function PolicySimulator() {
 
 /* ================= Halftone portrait ================= */
 
-export function HalftonePortrait({ src, alt }: { src: string; alt: string }) {
+export function HalftonePortrait({ src, full, alt }: { src: string; full: string; alt: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -194,7 +194,7 @@ export function HalftonePortrait({ src, alt }: { src: string; alt: string }) {
     const wrap = wrapRef.current;
     if (!canvas || !wrap) return;
     const img = new window.Image();
-    img.src = src;
+    img.decoding = "async";
 
     const draw = () => {
       if (!img.complete || !img.naturalWidth) return;
@@ -239,12 +239,22 @@ export function HalftonePortrait({ src, alt }: { src: string; alt: string }) {
     };
 
     img.onload = draw;
-    draw();
+    // Don't fetch or draw anything until the portrait is close to the viewport.
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        img.src = src;
+      },
+      { rootMargin: "400px 0px" },
+    );
+    io.observe(wrap);
     const ro = new ResizeObserver(draw);
     ro.observe(wrap);
     const mo = new MutationObserver(draw);
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     return () => {
+      io.disconnect();
       ro.disconnect();
       mo.disconnect();
     };
@@ -255,8 +265,12 @@ export function HalftonePortrait({ src, alt }: { src: string; alt: string }) {
       <canvas ref={canvasRef} className="absolute inset-0 size-full transition-opacity duration-500 group-hover:opacity-0" aria-hidden />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={src}
+        src={full}
         alt={alt}
+        loading="lazy"
+        decoding="async"
+        width={640}
+        height={857}
         className="absolute inset-0 size-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
       />
     </div>

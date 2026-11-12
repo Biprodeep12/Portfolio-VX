@@ -1,27 +1,30 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import {
-  Boxes,
-  ChevronLeft,
-  ChevronRight,
-  CornerDownLeft,
-  ExternalLink,
-  FileText,
-  Github,
-  Hash,
-  Mail,
-  Moon,
-  Search,
-  Sun,
-  X,
-  type LucideIcon,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Moon, Search, Sun, X } from "lucide-react";
 import { PROFILE, PROJECTS, RESUME, SECTIONS } from "@/data/profile";
-import { ToastProvider, useToast } from "./client";
-import { ProjectDetail, ResumePreview } from "./Details";
+import dynamic from "next/dynamic";
+import { ToastProvider } from "./client";
 import { Status } from "./ui";
 import { audit } from "./audit";
+
+const ProjectDetail = dynamic(() => import("./ModalBodies").then((m) => m.ProjectDetail), { ssr: false, loading: () => <ModalSkeleton /> });
+const ResumePreview = dynamic(() => import("./ModalBodies").then((m) => m.ResumePreview), { ssr: false, loading: () => <ModalSkeleton /> });
+const CommandPalette = dynamic(() => import("./Palette"), { ssr: false });
+
+function ModalSkeleton() {
+  return (
+    <div className="p-6 grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] gap-6" aria-busy="true">
+      <div className="aspect-[16/10] rounded-lg bg-hover animate-pulse" />
+      <div className="flex flex-col gap-3">
+        <div className="h-6 w-2/3 rounded bg-hover animate-pulse" />
+        <div className="h-4 w-full rounded bg-hover animate-pulse" />
+        <div className="h-4 w-5/6 rounded bg-hover animate-pulse" />
+        <div className="h-40 rounded-lg bg-hover animate-pulse mt-2" />
+      </div>
+    </div>
+  );
+}
 
 /* ---------------- Console context ---------------- */
 
@@ -341,119 +344,6 @@ function Modal({
   );
 }
 
-/* ---------------- Command palette ---------------- */
-
-type Cmd = { id: string; label: string; hint: string; icon: LucideIcon; run: () => void };
-
-function CommandPalette({ onClose }: { onClose: () => void }) {
-  const toast = useToast();
-  const { openProject, openResume, toggleTheme } = useConsole();
-  const [q, setQ] = useState("");
-  const [sel, setSel] = useState(0);
-  const listRef = useRef<HTMLUListElement>(null);
-
-  const commands = useMemo<Cmd[]>(() => {
-    const jump = (id: string) => () =>
-      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    const open = (href: string) => () => window.open(href, "_blank", "noopener,noreferrer");
-    return [
-      { id: "top", label: "Overview", hint: "Section", icon: Hash, run: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
-      ...SECTIONS.map((s) => ({ id: s.id, label: s.label, hint: "Section", icon: Hash, run: jump(s.id) })),
-      ...PROJECTS.map((p) => ({
-        id: p.id,
-        label: `${p.name} — ${p.title}`,
-        hint: "Project",
-        icon: Boxes,
-        run: () => openProject(p.id),
-      })),
-      { id: "resume", label: "Preview resume", hint: "Document", icon: FileText, run: openResume },
-      { id: "theme", label: "Toggle light / dark theme", hint: "Action", icon: Moon, run: toggleTheme },
-      {
-        id: "copy-email",
-        label: "Copy email address",
-        hint: "Action",
-        icon: Mail,
-        run: () => {
-          navigator.clipboard?.writeText(PROFILE.email).then(() => toast("Email copied"));
-        },
-      },
-      { id: "gh", label: "Open GitHub", hint: "External", icon: Github, run: open(PROFILE.github) },
-      { id: "li", label: "Open LinkedIn", hint: "External", icon: ExternalLink, run: open(PROFILE.linkedin) },
-    ];
-  }, [openProject, openResume, toggleTheme, toast]);
-
-  const results = useMemo(() => {
-    const s = q.trim().toLowerCase();
-    return s ? commands.filter((c) => `${c.label} ${c.hint}`.toLowerCase().includes(s)) : commands;
-  }, [q, commands]);
-
-  useEffect(() => setSel(0), [q]);
-  useEffect(() => {
-    listRef.current?.querySelector(`[data-i="${sel}"]`)?.scrollIntoView({ block: "nearest" });
-  }, [sel]);
-
-  const exec = (c?: Cmd) => {
-    if (!c) return;
-    onClose();
-    c.run();
-  };
-
-  return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center pt-[14vh] px-4" role="dialog" aria-modal="true" aria-label="Command palette">
-      <div className="absolute inset-0 bg-black/40 fade" onClick={onClose} />
-      <div className="anim-in relative w-full max-w-xl panel shadow-2xl shadow-black/20 overflow-hidden">
-        <div className="flex items-center gap-2 px-3.5 h-12 border-b border-line">
-          <Search className="size-4 text-muted" />
-          <input
-            autoFocus
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "ArrowDown") {
-                e.preventDefault();
-                setSel((s) => Math.min(s + 1, results.length - 1));
-              } else if (e.key === "ArrowUp") {
-                e.preventDefault();
-                setSel((s) => Math.max(s - 1, 0));
-              } else if (e.key === "Enter") {
-                exec(results[sel]);
-              } else if (e.key === "Escape") {
-                onClose();
-              }
-            }}
-            placeholder="Jump to a section, project or action…"
-            className="flex-1 bg-transparent outline-none text-[14px] text-fg placeholder:text-faint"
-          />
-          <kbd className="kbd">esc</kbd>
-        </div>
-        <ul ref={listRef} className="max-h-80 overflow-y-auto p-1.5">
-          {results.length === 0 && <li className="px-3 py-6 text-center text-muted">No results for “{q}”</li>}
-          {results.map((c, i) => {
-            const Icon = c.icon;
-            return (
-              <li key={c.id}>
-                <button
-                  data-i={i}
-                  onMouseMove={() => setSel(i)}
-                  onClick={() => exec(c)}
-                  className={`w-full flex items-center gap-2.5 h-9 px-2.5 rounded-md text-left cursor-pointer ${
-                    i === sel ? "bg-hover text-fg" : "text-fg-2"
-                  }`}
-                >
-                  <Icon className="size-4 text-muted shrink-0" />
-                  <span className="flex-1 truncate">{c.label}</span>
-                  <span className="text-[11px] text-faint">{c.hint}</span>
-                  {i === sel && <CornerDownLeft className="size-3.5 text-muted" />}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-    </div>
-  );
-}
-
 /* ---------------- Console bar ---------------- */
 
 const HINTS = ["strux", "deployments", "resume", "copy email", "mapgeox", "dark theme"];
@@ -498,7 +388,7 @@ export function ConsoleBar() {
 
   return (
     <div className="flex items-center gap-3 h-16">
-      <a href="#" className="flex items-center gap-2.5 shrink-0 group" aria-label="Back to top">
+      <a href="#" className="flex items-center gap-2.5 shrink-0 group" title="Back to top">
         <Logo />
         <span className="leading-none">
           <span className="block text-[13px] font-semibold tracking-tight text-fg">Biprodeep Bose</span>
@@ -509,13 +399,14 @@ export function ConsoleBar() {
       <button
         onClick={openPalette}
         className="ml-auto sm:mx-auto flex items-center gap-2.5 h-9 sm:w-[360px] rounded-lg border border-line bg-panel/80 backdrop-blur px-2.5 text-left cursor-pointer hover:border-line-strong transition-colors shadow-[0_1px_2px_rgb(16_24_40/0.04)]"
-        aria-label="Search the console"
       >
-        <Search className="size-4 text-muted shrink-0" />
-        <span className="hidden sm:flex flex-1 min-w-0 items-center text-[13px]">
-          <span className="text-faint">Search</span>
-          <span className="mono text-[12px] text-fg-2 ml-1.5 truncate">{ghost}</span>
-          <span className="w-px h-3.5 bg-accent ml-px caret-blink" aria-hidden />
+        <Search className="size-4 text-muted shrink-0" aria-hidden />
+        <span className="flex-1 min-w-0 flex items-center text-[13px]">
+          <span className="sr-only sm:not-sr-only text-faint">Search</span>
+          <span className="hidden sm:inline mono text-[12px] text-fg-2 ml-1.5 truncate" aria-hidden>
+            {ghost}
+          </span>
+          <span className="hidden sm:inline w-px h-3.5 bg-accent ml-px caret-blink" aria-hidden />
         </span>
         <kbd className="kbd hidden sm:inline">Ctrl K</kbd>
       </button>

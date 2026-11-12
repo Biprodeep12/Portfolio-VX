@@ -12,8 +12,8 @@
   --line-strong: #d0d5dd;
   --fg: #101828;
   --fg-2: #344054;
-  --muted: #667085;
-  --faint: #98a2b3;
+  --muted: #576274;
+  --faint: #667085;
   --accent: #1f6feb;
   --accent-fg: #ffffff;
   --accent-soft: #eaf2ff;
@@ -34,8 +34,8 @@
   --line-strong: #323a46;
   --fg: #e6e9ee;
   --fg-2: #c3c9d3;
-  --muted: #8b95a5;
-  --faint: #5d6675;
+  --muted: #98a2b1;
+  --faint: #7e8795;
   --accent: #4c8dff;
   --accent-fg: #0b0d10;
   --accent-soft: #14233d;
@@ -297,7 +297,7 @@ html {
   animation-delay: var(--d, 0ms);
 }
 @keyframes hero-in {
-  from { opacity: 0; transform: translateY(18px); filter: blur(4px); }
+  from { opacity: 0.01; transform: translateY(18px); filter: blur(4px); }
   to { opacity: 1; transform: none; filter: none; }
 }
 

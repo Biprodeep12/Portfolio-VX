@@ -49,13 +49,13 @@ export default function Home() {
               </span>
               <CopyButton value={`arn:bb:iam::0412:user/${PROFILE.handle}`} label="ARN copied" />
             </div>
-            <h1 style={{ ["--d" as string]: "80ms" }} className="hero-in text-[44px] sm:text-[60px] leading-[0.98] font-semibold tracking-[-0.04em] text-fg">
+            <h1 className="text-[44px] sm:text-[60px] leading-[0.98] font-semibold tracking-[-0.04em] text-fg">
               Biprodeep
               <br />
               Bose<span className="text-accent">.</span>
             </h1>
-            <p style={{ ["--d" as string]: "200ms" }} className="hero-in mt-5 text-[16px] sm:text-[17px] font-medium text-fg-2 tracking-tight">{PROFILE.role}</p>
-            <p style={{ ["--d" as string]: "280ms" }} className="hero-in mt-2.5 text-[14px] leading-relaxed text-muted max-w-[460px]">{PROFILE.summary}</p>
+            <p className="mt-5 text-[16px] sm:text-[17px] font-medium text-fg-2 tracking-tight">{PROFILE.role}</p>
+            <p className="mt-2.5 text-[14px] leading-relaxed text-muted max-w-[460px]">{PROFILE.summary}</p>
             <div style={{ ["--d" as string]: "380ms" }} className="hero-in mt-7 flex items-center gap-2 flex-wrap">
               <a href="#contact" className="btn-primary">
                 Get in touch
@@ -236,7 +236,7 @@ export default function Home() {
         <Section id="about" index="05" title="Account" description="The human behind the account ID.">
           <div className="panel overflow-hidden grid grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)]">
             <div className="relative aspect-[4/5] md:aspect-auto md:min-h-[380px] border-b md:border-b-0 md:border-r border-line bg-subtle">
-              <HalftonePortrait src="/pfp.webp" alt={PROFILE.name} />
+              <HalftonePortrait src="/img/pfp-320.webp" full="/img/pfp-640.webp" alt={PROFILE.name} />
               <span className="absolute left-3 bottom-3 mono text-[10.5px] text-muted bg-panel/90 border border-line rounded px-1.5 py-0.5 pointer-events-none">
                 hover to de-dither
               </span>

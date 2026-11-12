@@ -14,19 +14,40 @@ const fmtTime = (t: number) => new Date(t).toTimeString().slice(0, 8);
 
 function LogLine({ e }: { e: AuditEvent }) {
   return (
-    <span className="text-[#6b7380]">
+    <span className="text-[#7c8491]">
       {fmtTime(e.t)} <span className="text-[#8fa6c9]">{e.action.padEnd(20, " ")}</span> {e.target.padEnd(16, " ")}{" "}
       <span className={e.status < 400 ? "text-[#5fd68a]" : "text-[#f2777a]"}>{e.status}</span> {e.ms}ms
     </span>
   );
 }
 
+function WhoAmI() {
+  return (
+    <div>
+      <div>
+        <span className="text-[#f3f5f7] font-semibold">{PROFILE.name}</span>{" "}
+        <span className="text-[#7c8491]">({PROFILE.accountId})</span>
+      </div>
+      <div className="text-[#9aa3af]">{PROFILE.role}</div>
+      <div className="text-[#9aa3af]">
+        region <span className="text-[#d5d9e0]">{PROFILE.location.toLowerCase()}</span> · status{" "}
+        <span className="text-[#5fd68a]">active</span> · roles <span className="text-[#d5d9e0]">{EXPERIENCE.length}</span>
+      </div>
+    </div>
+  );
+}
+
+// Rendered on the server, so the hero is complete before any JS runs.
+const BOOT: Line[] = [
+  { id: -2, kind: "in", body: "whoami" },
+  { id: -1, kind: "out", body: <WhoAmI /> },
+];
+
 export function Terminal() {
   const { openProject, openResume, toggleTheme, theme } = useConsole();
-  const [lines, setLines] = useState<Line[]>([]);
+  const [lines, setLines] = useState<Line[]>(BOOT);
   const [input, setInput] = useState("");
   const [session, setSession] = useState<{ id: string; zone: string } | null>(null);
-  const [typing, setTyping] = useState(true);
   const histRef = useRef<string[]>([]);
   const histIdx = useRef(-1);
   const nextId = useRef(0);
@@ -86,18 +107,9 @@ export function Terminal() {
           push(
             "out",
             <div>
-              <div>
-                <span className="text-[#f3f5f7] font-semibold">{PROFILE.name}</span>{" "}
-                <span className="text-[#6b7380]">({PROFILE.accountId})</span>
-              </div>
-              <div className="text-[#9aa3af]">{PROFILE.role}</div>
-              <div className="text-[#9aa3af]">
-                region <span className="text-[#d5d9e0]">{PROFILE.location.toLowerCase()}</span> · status{" "}
-                <span className="text-[#5fd68a]">active</span> · roles{" "}
-                <span className="text-[#d5d9e0]">{EXPERIENCE.length}</span>
-              </div>
-              <div className="text-[#6b7380] mt-1">
-                you are {s.id} from {s.zone}. type <span className="text-[#79a8ff]">help</span> to look around.
+              <WhoAmI />
+              <div className="text-[#7c8491] mt-1">
+                you are {s.id} from {s.zone}.
               </div>
             </div>,
           );
@@ -116,7 +128,7 @@ export function Terminal() {
                     <span className="text-[#9aa3af]">{p.stack.join(", ")}</span>
                   </div>
                 ))}
-                {what === "" && <div className="text-[#6b7380]">also: ls deployments · ls capabilities</div>}
+                {what === "" && <div className="text-[#7c8491]">also: ls deployments · ls capabilities</div>}
               </div>,
             );
           } else if (what.startsWith("dep")) {
@@ -126,7 +138,7 @@ export function Terminal() {
                 {EXPERIENCE.map((r) => (
                   <div key={r.id}>
                     <span className="text-[#79a8ff]">{r.company.padEnd(22, " ")}</span>
-                    <span className="text-[#9aa3af]">{r.title}</span> <span className="text-[#6b7380]">since {r.period.split(" – ")[0]}</span>
+                    <span className="text-[#9aa3af]">{r.title}</span> <span className="text-[#7c8491]">since {r.period.split(" – ")[0]}</span>
                   </div>
                 ))}
               </div>,
@@ -191,7 +203,7 @@ export function Terminal() {
           const sec = SECTIONS.find((x) => x.id === target || x.label.toLowerCase() === target);
           if (sec) {
             document.getElementById(sec.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-            push("out", <span className="text-[#6b7380]">→ /{sec.id}</span>);
+            push("out", <span className="text-[#7c8491]">→ /{sec.id}</span>);
           } else if (!target) window.scrollTo({ top: 0, behavior: "smooth" });
           else push("err", `cd: ${arg}: no such section. try: ${SECTIONS.map((x) => x.id).join(" ")}`);
           break;
@@ -199,7 +211,7 @@ export function Terminal() {
         case "theme": {
           const want = arg.toLowerCase();
           if (!want || (want !== themeRef.current && (want === "light" || want === "dark"))) toggleTheme();
-          push("out", <span className="text-[#6b7380]">theme updated</span>);
+          push("out", <span className="text-[#7c8491]">theme updated</span>);
           break;
         }
         case "contact":
@@ -229,7 +241,7 @@ export function Terminal() {
           );
           break;
         case "logs":
-          push("out", <span className="text-[#6b7380]">streaming audit events for {s.id}. they appear inline as you use the page.</span>);
+          push("out", <span className="text-[#7c8491]">streaming audit events for {s.id}. they appear inline as you use the page.</span>);
           break;
         case "uptime": {
           const sec = Math.round((Date.now() - s.started) / 1000);
@@ -259,7 +271,7 @@ export function Terminal() {
           audit("AssumeRole", "root", 403);
           break;
         case "exit":
-          push("out", <span className="text-[#6b7380]">there is no exit. only deploys.</span>);
+          push("out", <span className="text-[#7c8491]">there is no exit. only deploys.</span>);
           break;
         default:
           push("err", `${name}: command not found. try 'help'`);
@@ -268,39 +280,25 @@ export function Terminal() {
     [push, openProject, openResume, toggleTheme],
   );
 
-  // Boot: type `whoami` once so the shell explains itself.
+  // After hydration: attach this visitor's session to the pre-rendered whoami.
   useEffect(() => {
     const s = getSession();
     setSession({ id: s.id, zone: s.zone });
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      run("whoami");
-      setTyping(false);
-      return;
-    }
-    const word = "whoami";
-    let i = 0;
-    let timer = window.setTimeout(function tick() {
-      i++;
-      setInput(word.slice(0, i));
-      if (i < word.length) timer = window.setTimeout(tick, 70 + Math.random() * 60);
-      else
-        timer = window.setTimeout(() => {
-          setInput("");
-          run(word);
-          setTyping(false);
-        }, 260);
-    }, 700);
-    return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    push(
+      "out",
+      <div className="text-[#7c8491]">
+        you are {s.id} from {s.zone}. type <span className="text-[#79a8ff]">help</span> to look around.
+      </div>,
+    );
+    audit("GetCallerIdentity", s.id);
+  }, [push]);
 
   const complete = () => {
     const parts = input.split(" ");
     if (parts.length === 1) {
       const m = COMMANDS.filter((c) => c.startsWith(parts[0]));
       if (m.length === 1) setInput(m[0] + " ");
-      else if (m.length > 1) push("out", <span className="text-[#6b7380]">{m.join("  ")}</span>);
+      else if (m.length > 1) push("out", <span className="text-[#7c8491]">{m.join("  ")}</span>);
       return;
     }
     const pool =
@@ -313,13 +311,13 @@ export function Terminal() {
             : [];
     const m = pool.filter((c) => c.startsWith(parts[1] ?? ""));
     if (m.length === 1) setInput(`${parts[0]} ${m[0]}`);
-    else if (m.length > 1) push("out", <span className="text-[#6b7380]">{m.join("  ")}</span>);
+    else if (m.length > 1) push("out", <span className="text-[#7c8491]">{m.join("  ")}</span>);
   };
 
   const prompt = (
     <span className="shrink-0">
       <span className="text-[#5fd68a]">{session?.id ?? "guest"}</span>
-      <span className="text-[#6b7380]">@bb</span>
+      <span className="text-[#7c8491]">@bb</span>
       <span className="text-[#79a8ff]">:~$</span>
     </span>
   );
@@ -327,18 +325,18 @@ export function Terminal() {
   return (
     <div
       className="term rounded-lg overflow-hidden border border-black/10 dark:border-white/10 bg-[#0f1114] text-[#d5d9e0] shadow-[0_24px_48px_-24px_rgb(0_0_0/0.45)]"
-      onClick={() => !typing && inputRef.current?.focus({ preventScroll: true })}
+      onClick={() => inputRef.current?.focus({ preventScroll: true })}
     >
       <div className="flex items-center h-9 px-3 border-b border-white/[0.07] text-[11.5px] font-mono">
         <span className="text-[#d5d9e0]">cloudshell</span>
         <span className="mx-2 text-[#3a404a]">|</span>
-        <span className="text-[#6b7380] truncate">{session ? `${session.id} · ${session.zone}` : "connecting…"}</span>
-        <span className="ml-auto flex items-center gap-1.5 text-[#6b7380]">
+        <span className="text-[#7c8491] truncate">{session ? `${session.id} · ${session.zone}` : "connecting…"}</span>
+        <span className="ml-auto flex items-center gap-1.5 text-[#7c8491]">
           <span className="size-1.5 rounded-full bg-[#5fd68a]" /> connected
         </span>
       </div>
       <div ref={bodyRef} className="h-[300px] overflow-y-auto px-3.5 py-3 font-mono text-[12.5px] leading-[1.6]">
-        <div className="text-[#6b7380] mb-2">
+        <div className="text-[#7c8491] mb-2">
           Biprodeep Console shell. Session is local to your browser; nothing is sent anywhere.
         </div>
         {lines.map((l) => (
@@ -359,7 +357,6 @@ export function Terminal() {
             <input
               ref={inputRef}
               value={input}
-              readOnly={typing}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
