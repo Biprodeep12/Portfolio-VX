@@ -141,7 +141,7 @@ export function CaseForm() {
           onKeyDown={(e) => {
             if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) submit();
           }}
-          className="p-5 sm:p-6 flex flex-col gap-5"
+          className="p-6 sm:p-8 flex flex-col gap-6"
         >
           <fieldset onFocus={() => setFocus("type")} onBlur={() => setFocus(null)}>
             <legend className="label mb-2">What&apos;s it about</legend>
@@ -167,7 +167,7 @@ export function CaseForm() {
             </div>
           </fieldset>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <FieldWrap label="Your name" optional>
               <input
                 name="name"
@@ -252,14 +252,14 @@ export function CaseForm() {
 
       {/* Live request preview */}
       <div className="border-t lg:border-t-0 lg:border-l border-line bg-code flex flex-col">
-        <div className="flex items-center justify-between h-10 px-4 border-b border-line">
+        <div className="flex items-center justify-between h-12 px-6 border-b border-line">
           <span className="mono text-muted text-[11.5px]">request preview</span>
           <span className="flex items-center gap-1.5 mono text-[11px] text-faint">
             <span className={`size-1.5 rounded-full ${status === "sent" ? "bg-ok" : "bg-accent caret-blink"}`} />
             {status === "sent" ? "201 created" : "live"}
           </span>
         </div>
-        <pre className="mono text-[12px] leading-[1.75] p-4 text-fg-2 whitespace-pre-wrap break-words flex-1">
+        <pre className="mono text-[12px] leading-[1.8] p-6 text-fg-2 whitespace-pre-wrap break-words flex-1">
           <span className="text-accent font-semibold">POST</span> /v1/support/cases{"\n"}
           <span className="text-muted">Host:</span> biprodeep.me{"\n"}
           <span className="text-muted">Content-Type:</span> application/json{"\n\n"}

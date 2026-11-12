@@ -218,10 +218,10 @@ export const SKILLS: { group: string; prefix: string; items: string[] }[] = [
   {
     group: "Technologies",
     prefix: "tech",
-    items: ["React", "Next.js", "Node.js", "Express.js", "NestJS", "React Native", "Socket.IO", "LiveKit", "AWS", "GraphQL", "Redis", "Linux"],
+    items: ["React", "Next.js", "Node.js", "Express.js", "NestJS", "React Native", "Tailwind CSS", "Socket.IO", "LiveKit", "AWS", "GraphQL", "Redis", "Nginx", "Linux"],
   },
-  { group: "Databases", prefix: "db", items: ["MySQL", "PostgreSQL", "MongoDB", "Firebase"] },
-  { group: "Tools & Platforms", prefix: "tool", items: ["Git", "Github", "Docker", "Vercel", "Figma"] },
+  { group: "Databases", prefix: "db", items: ["MySQL", "PostgreSQL", "MongoDB", "Elasticsearch", "Firebase"] },
+  { group: "Tools & Platforms", prefix: "tool", items: ["Git", "Github", "Docker", "Vercel", "Playwright", "Jest", "Figma"] },
 ];
 
 export const ABOUT = {
@@ -240,7 +240,7 @@ export const SECTIONS = [
   { id: "services", label: "Services", api: "ListServices" },
   { id: "projects", label: "Projects", api: "ListResources" },
   { id: "deployments", label: "Deployments", api: "DescribeDeployments" },
-  { id: "capabilities", label: "Capabilities", api: "GetPolicy" },
+  { id: "stack", label: "Stack", api: "GetStack" },
   { id: "about", label: "Account", api: "GetAccount" },
   { id: "notes", label: "Notes", api: "ListNotes" },
   { id: "faq", label: "FAQ", api: "DescribeFaq" },

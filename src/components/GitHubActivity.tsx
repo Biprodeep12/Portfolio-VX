@@ -53,8 +53,8 @@ export async function GitHubActivity() {
   const now = Date.now();
 
   return (
-    <div className="mt-4 panel overflow-hidden">
-      <div className="flex items-center justify-between gap-3 px-4 h-11 border-b border-line">
+    <div className="mt-8 panel overflow-hidden">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 px-5 py-3 min-h-12 border-b border-line">
         <span className="font-semibold text-fg">Recently pushed on GitHub</span>
         <span className="mono text-[11.5px] text-muted">
           {user.public_repos} public repos · {user.followers} followers
@@ -63,7 +63,7 @@ export async function GitHubActivity() {
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-line">
         {recent.map((r) => (
           <li key={r.name} className={`bg-panel ${recent.indexOf(r) >= 3 ? "max-sm:hidden" : ""}`}>
-            <a href={r.html_url} target="_blank" rel="noopener noreferrer" className="group flex flex-col gap-1 p-4 h-full hover:bg-hover transition-colors">
+            <a href={r.html_url} target="_blank" rel="noopener noreferrer" className="group flex flex-col gap-1.5 p-5 h-full hover:bg-hover transition-colors">
               <span className="flex items-center gap-1.5 font-medium text-fg min-w-0">
                 <span className="truncate group-hover:text-accent transition-colors">{r.name}</span>
                 <ArrowUpRight className="size-3.5 text-faint shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />

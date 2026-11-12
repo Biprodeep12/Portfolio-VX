@@ -35,7 +35,10 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 } },
   openGraph: { type: "profile", firstName: "Biprodeep", lastName: "Bose", url: "/", title, description, siteName: PROFILE.name, locale: "en_US", images: [OG] },
   twitter: { card: "summary_large_image", title, description, creator: "@BiprodeepBose", images: [OG] },
-  icons: { icon: [{ url: "/favicon.ico" }, { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" }], apple: "/apple-touch-icon.png" },
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" }, { url: "/favicon.ico", sizes: "any" }],
+    apple: "/apple-touch-icon.png",
+  },
   manifest: "/site.webmanifest",
   other: { "format-detection": "telephone=no" },
 };

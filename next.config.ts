@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
+// Frozen at build time so "deployed" dates don't drift when ISR re-renders pages.
+const BUILD_TIME = new Date().toISOString();
+const BUILD_SHA = (process.env.VERCEL_GIT_COMMIT_SHA ?? "").slice(0, 7);
+
 const nextConfig: NextConfig = {
+  env: { BUILD_TIME, BUILD_SHA },
   trailingSlash: true,
   reactCompiler: true,
   reactStrictMode: true,

@@ -133,7 +133,7 @@ const INTENTS: { keys: string[]; answer: () => LocalAnswer }[] = [
     keys: ["skill", "stack", "tech", "language", "framework", "tools", "know", "database"],
     answer: () => ({
       text: SKILLS.map((g) => `- **${g.group}:** ${g.items.join(", ")}`).join("\n") + "\n\nAsk “can he work with X?” for anything specific.",
-      actions: [{ kind: "section", label: "See capabilities", id: "capabilities" }],
+      actions: [{ kind: "section", label: "See the stack", id: "stack" }],
     }),
   },
   {
@@ -227,7 +227,7 @@ export function localAnswer(question: string): LocalAnswer {
     if (d.effect === "Allow") {
       return {
         text: `Yes — **${d.skill}** is in his stack (policy action \`${d.action}\`).`,
-        actions: [{ kind: "section", label: "See capabilities", id: "capabilities" }],
+        actions: [{ kind: "section", label: "See the stack", id: "stack" }],
       };
     }
     if (term && term.split(" ").length <= 3) {
@@ -265,3 +265,21 @@ export function actionsFor(question: string): ChatAction[] {
 }
 
 export const SECTION_IDS = SECTIONS.map((s) => s.id);
+
+/* ---------------- Thinking trace topics ---------------- */
+
+const TOPIC_KEYS: [string, string[]][] = [
+  ["projects", ["project", "strux", "mapgeox", "mapgoex", "built", "build", "app", "demo", "portfolio"]],
+  ["experience", ["work", "job", "role", "experience", "saffron", "coding on the rocks", "career", "company", "year"]],
+  ["stack", ["skill", "stack", "tech", "language", "framework", "can he", "does he", "know", "use", "docker", "aws", "react", "next", "go", "python", "database"]],
+  ["contact", ["contact", "hire", "email", "reach", "available", "availability", "freelance", "resume", "cv"]],
+  ["about", ["who", "about", "background", "hobby", "free time", "philosophy", "approach", "location", "where"]],
+  ["notes", ["note", "blog", "write", "performance", "lighthouse", "adr", "lcp"]],
+];
+
+/** Which parts of the portfolio a question touches; drives the chat's thinking trace. */
+export function topicsFor(question: string): string[] {
+  const q = question.toLowerCase();
+  const hits = TOPIC_KEYS.filter(([, keys]) => keys.some((k) => q.includes(k))).map(([t]) => t);
+  return hits.length ? hits.slice(0, 3) : ["profile"];
+}

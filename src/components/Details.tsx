@@ -52,7 +52,7 @@ export function ProjectsView() {
   return (
     <div>
       {/* Toolbar */}
-      <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-4">
+      <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-6">
         <div className="relative lg:w-72">
           <Search className="size-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-faint pointer-events-none" />
           <input
@@ -136,17 +136,17 @@ export function ProjectsView() {
           </div>
         </div>
       ) : view === "cards" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {rows.map((p, i) => (
             <article
               key={p.id}
               className="rise lift group relative panel overflow-hidden flex flex-col hover:border-line-strong hover:shadow-[0_14px_36px_-18px_rgb(16_24_40/0.3)] has-[button:focus-visible]:ring-2 has-[button:focus-visible]:ring-accent has-[button:focus-visible]:ring-offset-2 has-[button:focus-visible]:ring-offset-canvas"
               style={{ ["--d" as string]: `${i * 90}ms` }}
             >
-              <div className="p-3 pb-0">
+              <div className="p-4 pb-0">
                 <BrowserFrame p={p} sizes="(max-width: 768px) 100vw, 540px" />
               </div>
-              <div className="p-4 flex flex-col flex-1">
+              <div className="p-6 flex flex-col flex-1">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="font-semibold text-[15px] tracking-tight text-fg">
@@ -159,12 +159,12 @@ export function ProjectsView() {
                   </div>
                   <Status>{p.status}</Status>
                 </div>
-                <p className="mt-2.5 text-fg-2 leading-relaxed line-clamp-2">{p.description}</p>
-                <div className="mt-3">
+                <p className="mt-3 text-fg-2 leading-relaxed line-clamp-2">{p.description}</p>
+                <div className="mt-4">
                   <Chips items={p.stack} />
                 </div>
               </div>
-              <div className="mt-auto flex items-center justify-between gap-3 border-t border-line px-4 h-11 bg-subtle/50">
+              <div className="mt-auto flex items-center justify-between gap-3 border-t border-line px-6 h-12 bg-subtle/50">
                   <span className="relative z-10 inline-flex items-center gap-1 min-w-0">
                     <span className="mono text-[11.5px] text-muted truncate">prj-{p.id}</span>
                     <CopyButton value={`prj-${p.id}`} label="Resource ID copied" />

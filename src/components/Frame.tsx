@@ -6,13 +6,13 @@ import { ConsoleBar } from "./Shell";
 import { SessionMeter } from "./Widgets";
 
 // Evaluated at build time: the footer shows when this copy was deployed.
-const BUILT_AT = new Date().toISOString();
+const BUILT_AT = process.env.BUILD_TIME || new Date().toISOString();
+const BUILD_SHA = process.env.BUILD_SHA || "";
 
 /** Shared page chrome: header bar, landmark <main>, footer. */
 export function Frame({ children }: { children: ReactNode }) {
   return (
     <div className="relative overflow-x-clip">
-      <div className="grid-bg absolute inset-x-0 top-0 h-[620px] pointer-events-none" aria-hidden />
       <div className="relative mx-auto max-w-[1160px] px-5 sm:px-8">
         <ConsoleBar />
         <main id="main" tabIndex={-1} className="outline-none">
@@ -27,12 +27,20 @@ export function Frame({ children }: { children: ReactNode }) {
 function SiteFooter() {
   const built = new Date(BUILT_AT);
   return (
-    <footer className="mt-20 mb-24 pt-5 border-t border-line grid grid-cols-1 md:grid-cols-3 gap-3 text-[12px] text-muted">
+    <footer className="mt-32 mb-24 pt-6 border-t border-line grid grid-cols-1 md:grid-cols-3 gap-3 text-[12px] text-muted">
       <span>
         © {built.getFullYear()} {PROFILE.name} ·{" "}
         <span className="mono" title={BUILT_AT}>
           deployed {BUILT_AT.slice(0, 10)}
         </span>
+        {BUILD_SHA && (
+          <>
+            {" · "}
+            <a className="mono link" href={`${PROFILE.github}/Portfolio-VX/commit/${BUILD_SHA}`} target="_blank" rel="noopener noreferrer">
+              {BUILD_SHA}
+            </a>
+          </>
+        )}
       </span>
       <span className="md:text-center">
         <SessionMeter />

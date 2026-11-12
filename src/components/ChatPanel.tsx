@@ -2,14 +2,66 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowUp, Copy, ExternalLink, FileText, Hash, Boxes, RotateCcw, Square, X } from "lucide-react";
-import { SUGGESTIONS, actionsFor, localAnswer, type ChatAction } from "@/data/knowledge";
+import { SUGGESTIONS, actionsFor, localAnswer, topicsFor, type ChatAction } from "@/data/knowledge";
 import { PROFILE } from "@/data/profile";
 import { Logo } from "./Shell";
 import { useConsole } from "./Shell";
 import { useToast } from "./client";
 import { audit } from "./audit";
 
-type Msg = { id: number; role: "user" | "assistant"; text: string; actions?: ChatAction[]; source?: "ai" | "offline"; pending?: boolean };
+type Trace = { steps: string[]; startedAt: number; ms?: number; mode?: "ai" | "offline" };
+type Msg = {
+  id: number;
+  role: "user" | "assistant";
+  text: string;
+  actions?: ChatAction[];
+  source?: "ai" | "offline";
+  pending?: boolean;
+  trace?: Trace;
+};
+
+const STEP_MS = 380;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Live "thinking" lines while pending; a one-line summary once answered. */
+function TraceView({ trace, pending }: { trace: Trace; pending: boolean }) {
+  const [shown, setShown] = useState(1);
+  useEffect(() => {
+    if (!pending) return;
+    const t = window.setInterval(() => setShown((n) => Math.min(n + 1, trace.steps.length)), STEP_MS);
+    return () => window.clearInterval(t);
+  }, [pending, trace.steps.length]);
+
+  if (!pending) {
+    const topics = trace.steps.filter((s) => s.startsWith("checking ")).map((s) => s.slice(9));
+    return (
+      <div className="mb-1 mono text-[11px] text-faint flex items-center gap-1.5">
+        <span aria-hidden>↳</span>
+        <span>
+          read {topics.join(" · ") || "profile"}
+          {trace.ms !== undefined && ` · ${(trace.ms / 1000).toFixed(1)}s`}
+          {trace.mode === "offline" && " · offline"}
+        </span>
+      </div>
+    );
+  }
+  return (
+    <ol className="mono text-[11.5px] leading-6" aria-label="Assistant is working">
+      {trace.steps.slice(0, shown).map((step, i) => {
+        const current = i === shown - 1;
+        return (
+          <li key={step} className={`flex items-center gap-2 trace-in ${current ? "text-fg-2" : "text-faint"}`}>
+            <span className="w-3 text-center" aria-hidden>
+              {current ? <span className="inline-block size-1.5 rounded-full bg-accent caret-blink" /> : "✓"}
+            </span>
+            {step}
+            {current && "…"}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
 
 const STORE = "assistant-thread";
 const GREETING: Msg = {
@@ -143,7 +195,9 @@ export default function ChatPanel({ onClose, ask: askProp }: { onClose: () => vo
       setInput("");
       setBusy(true);
       const userMsg: Msg = { id: nextId.current++, role: "user", text: q };
-      const reply: Msg = { id: nextId.current++, role: "assistant", text: "", pending: true };
+      const steps = ["reading portfolio facts", ...topicsFor(q).map((t) => `checking ${t}`), "asking the model"];
+      const reply: Msg = { id: nextId.current++, role: "assistant", text: "", pending: true, trace: { steps, startedAt: Date.now() } };
+      const elapsed = () => Date.now() - reply.trace!.startedAt;
       const history = [...msgsRef.current.filter((m) => m.id !== 0 && m.text), userMsg]
         .slice(-10)
         .map((m) => ({ role: m.role, content: m.text }));
@@ -172,7 +226,7 @@ export default function ChatPanel({ onClose, ask: askProp }: { onClose: () => vo
           if (!frame) {
             frame = requestAnimationFrame(() => {
               frame = 0;
-              patch(reply.id, (m) => ({ ...m, text: got, pending: false }));
+              patch(reply.id, (m) => ({ ...m, text: got, pending: false, trace: m.trace && { ...m.trace, ms: m.trace.ms ?? elapsed(), mode: "ai" } }));
             });
           }
         }
@@ -184,7 +238,14 @@ export default function ChatPanel({ onClose, ask: askProp }: { onClose: () => vo
           patch(reply.id, (m) => ({ ...m, text: got.trim() + " …", pending: false, source: "ai" }));
         } else if (!ctrl.signal.aborted) {
           const a = localAnswer(q);
-          patch(reply.id, (m) => ({ ...m, pending: false, source: "offline" }));
+          // Model unavailable: say so in the trace, let it finish playing, then answer.
+          patch(reply.id, (m) => ({
+            ...m,
+            trace: m.trace && { ...m.trace, steps: [...m.trace.steps.slice(0, -1), "answering offline from portfolio data"] },
+          }));
+          const minVisible = steps.length * STEP_MS + 150;
+          if (elapsed() < minVisible) await sleep(minVisible - elapsed());
+          patch(reply.id, (m) => ({ ...m, pending: false, source: "offline", trace: m.trace && { ...m.trace, ms: elapsed(), mode: "offline" } }));
           await typeOut(reply.id, a.text, ctrl.signal);
           patch(reply.id, (m) => ({ ...m, actions: a.actions }));
         } else {
@@ -259,17 +320,20 @@ export default function ChatPanel({ onClose, ask: askProp }: { onClose: () => vo
             </div>
           ) : (
             <div key={m.id} className="self-start max-w-[92%] msg-in">
-              <div className="rounded-2xl rounded-bl-md border border-line bg-subtle px-3.5 py-2.5 leading-relaxed text-fg-2 break-words">
-                {m.pending && !m.text ? (
-                  <span className="flex gap-1 py-1.5" aria-label="Thinking">
-                    <span className="dot" />
-                    <span className="dot [animation-delay:150ms]" />
-                    <span className="dot [animation-delay:300ms]" />
-                  </span>
-                ) : (
-                  <Markdown text={m.text} />
-                )}
-              </div>
+              {m.trace && <TraceView trace={m.trace} pending={!!m.pending && !m.text} />}
+              {!(m.pending && !m.text) && (
+                <div className="rounded-2xl rounded-bl-md border border-line bg-subtle px-3.5 py-2.5 leading-relaxed text-fg-2 break-words">
+                  {m.trace || m.text ? (
+                    <Markdown text={m.text} />
+                  ) : (
+                    <span className="flex gap-1 py-1.5" aria-label="Thinking">
+                      <span className="dot" />
+                      <span className="dot [animation-delay:150ms]" />
+                      <span className="dot [animation-delay:300ms]" />
+                    </span>
+                  )}
+                </div>
+              )}
               {!!m.actions?.length && (
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {m.actions.map((a) => {

@@ -3,12 +3,16 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { EXPERIENCE, PROFILE, PROJECTS, SECTIONS, SKILLS } from "@/data/profile";
 import { evaluate } from "@/data/policy";
+import { BUILDING_SINCE } from "@/data/profile";
+import { LIVE_PROJECTS, MILESTONES, fmtYm, monthsBetween, workShare } from "@/data/career";
 import { audit, getSession, onAudit, type AuditEvent } from "./audit";
 import { useConsole } from "./Shell";
 
 type Line = { id: number; kind: "in" | "out" | "err" | "log"; body: ReactNode };
 
-const COMMANDS = ["help", "tldr", "ask", "whoami", "ls", "open", "can", "cd", "theme", "contact", "logs", "uptime", "date", "history", "clear", "sudo"];
+const QUICK = ["help", "traceroute", "top", "git log", "ssh strux", "can docker"];
+
+const COMMANDS = ["help", "tldr", "ask", "git", "traceroute", "top", "ssh", "whoami", "ls", "open", "can", "cd", "theme", "contact", "logs", "uptime", "date", "history", "clear", "sudo"];
 
 const fmtTime = (t: number) => new Date(t).toTimeString().slice(0, 8);
 
@@ -90,11 +94,15 @@ export function Terminal() {
             <div className="grid grid-cols-[110px_1fr] gap-x-3">
               {[
                 ["whoami", "who owns this account"],
-                ["ls <what>", "projects · deployments · capabilities"],
+                ["ls <what>", "projects · deployments · stack"],
                 ["open <id>", "open a project panel, or `open resume`"],
-                ["can <skill>", "simulate the capabilities policy"],
+                ["can <skill>", "check a technology against the stack"],
                 ["ask <question>", "ask the AI assistant"],
                 ["tldr", "the whole portfolio on one screen"],
+                ["git log", "career history, oldest last"],
+                ["traceroute", "the route from first repo to now"],
+                ["top", "where the work is going right now"],
+                ["ssh <project>", "connect to a live project"],
                 ["cd <section>", "jump to a section of the page"],
                 ["contact", "how to reach me"],
                 ["logs", "your session's audit trail"],
@@ -134,7 +142,7 @@ export function Terminal() {
                     <span className="text-[#9aa3af]">{p.stack.join(", ")}</span>
                   </div>
                 ))}
-                {what === "" && <div className="text-[#7c8491]">also: ls deployments · ls capabilities</div>}
+                {what === "" && <div className="text-[#7c8491]">also: ls deployments · ls stack</div>}
               </div>,
             );
           } else if (what.startsWith("dep")) {
@@ -149,7 +157,7 @@ export function Terminal() {
                 ))}
               </div>,
             );
-          } else if (what.startsWith("cap") || what.startsWith("skill")) {
+          } else if (what.startsWith("stack") || what.startsWith("cap") || what.startsWith("skill")) {
             push(
               "out",
               <div>
@@ -196,8 +204,8 @@ export function Terminal() {
             push(
               "out",
               <span>
-                <span className="text-[#f0b45a] font-semibold">implicit deny</span>{" "}
-                <span className="text-[#9aa3af]">&quot;{arg}&quot; isn&apos;t in the policy yet. it might be by next quarter.</span>
+                <span className="text-[#f0b45a] font-semibold">not listed</span>{" "}
+                <span className="text-[#9aa3af]">&quot;{arg}&quot; isn&apos;t on the stack page yet. ask him; it may well be in his toolbox.</span>
               </span>,
             );
           }
@@ -284,6 +292,106 @@ export function Terminal() {
           push("out", <span className="text-[#9aa3af]">handing your question to the assistant…</span>);
           openChat(arg);
           break;
+        case "git": {
+          if (arg.split(" ")[0] !== "log") {
+            push("err", `git: '${arg || ""}' is not supported here. try: git log`);
+            break;
+          }
+          push(
+            "out",
+            <div>
+              {[...MILESTONES].reverse().map((m) => (
+                <div key={m.ym + m.host} className="flex gap-3 whitespace-nowrap overflow-hidden">
+                  <span className="text-[#f0b45a] shrink-0">{m.ym}</span>
+                  <span className="text-[#79a8ff] shrink-0 hidden sm:inline">{m.type}:</span>
+                  <span className="text-[#c9cfd8] truncate">{m.msg}</span>
+                </div>
+              ))}
+            </div>,
+          );
+          audit("GitLog", "career");
+          break;
+        }
+        case "traceroute": {
+          const now = new Date();
+          push(
+            "out",
+            <div>
+              <div className="text-[#7c8491]">traceroute to {new URL(PROFILE.site).host}, {MILESTONES.length} hops max</div>
+              {MILESTONES.map((m, i) => {
+                const last = i === MILESTONES.length - 1;
+                return (
+                  <div key={m.ym + m.host} className="flex gap-2 whitespace-nowrap overflow-hidden">
+                    <span className="text-[#7c8491] w-5 text-right shrink-0">{i + 1}</span>
+                    <span className={`shrink-0 ${last ? "text-[#5fd68a]" : "text-[#79a8ff]"}`}>{m.host}</span>
+                    <span className="text-[#7c8491] shrink-0">({fmtYm(m.ym)})</span>
+                    <span className="text-[#f0b45a] shrink-0">{monthsBetween(BUILDING_SINCE.start, new Date(`${m.ym}-15`))} mo</span>
+                    {last && <span className="text-[#5fd68a]">✓ reached</span>}
+                  </div>
+                );
+              })}
+              <div className="text-[#7c8491]">{monthsBetween(BUILDING_SINCE.start, now)} months from first commit to here.</div>
+            </div>,
+          );
+          audit("Traceroute", "biprodeep");
+          break;
+        }
+        case "top": {
+          const up = monthsBetween(BUILDING_SINCE.start, new Date());
+          push(
+            "out",
+            <div>
+              <div className="text-[#7c8491]">
+                top - up {Math.floor(up / 12)}y {up % 12}m, {EXPERIENCE.length} roles, load: steady
+              </div>
+              <div className="text-[#d5d9e0] font-semibold whitespace-pre">
+                {"PROCESS".padEnd(22, " ")}
+                {"SHARE".padEnd(7, " ")}STATUS
+              </div>
+              {workShare().map((w) => (
+                <div key={w.name} className="whitespace-pre overflow-hidden">
+                  <span className="text-[#79a8ff]">{w.name.padEnd(22, " ")}</span>
+                  <span className="text-[#f0b45a]">{`${w.share}%`.padEnd(7, " ")}</span>
+                  <span className="text-[#5fd68a]">running</span>
+                  <span className="text-[#7c8491]"> · {w.prs} merged PRs</span>
+                </div>
+              ))}
+              {LIVE_PROJECTS.map((p) => (
+                <div key={p.id} className="whitespace-pre overflow-hidden">
+                  <span className="text-[#79a8ff]">{p.id.padEnd(22, " ")}</span>
+                  <span className="text-[#7c8491]">{"-".padEnd(7, " ")}</span>
+                  <span className="text-[#5fd68a]">live</span>
+                  <span className="text-[#7c8491]"> · {new URL(p.url).host}</span>
+                </div>
+              ))}
+              <div className="text-[#7c8491] mt-1">SHARE = share of merged PRs across current roles.</div>
+            </div>,
+          );
+          audit("DescribeProcesses", "top");
+          break;
+        }
+        case "ssh": {
+          const id = arg.replace(/^.*@/, "").toLowerCase();
+          const p = PROJECTS.find((x) => x.id === id || new URL(x.url).host === id);
+          if (!p) {
+            push("err", `ssh: Could not resolve hostname ${arg || "?"}. try: ${PROJECTS.map((x) => x.id).join(", ")}`);
+            break;
+          }
+          const host = new URL(p.url).host;
+          push(
+            "out",
+            <div>
+              <div className="text-[#7c8491]">Connecting to {host}:443 ...</div>
+              <div className="text-[#5fd68a]">Connection established.</div>
+              <div className="text-[#c9cfd8]">
+                Welcome to {p.name}: {p.title}. Opening it in a new tab.
+              </div>
+            </div>,
+          );
+          window.open(p.url, "_blank", "noopener,noreferrer");
+          audit("StartSession", p.id);
+          break;
+        }
         case "sudo":
           push("err", `${s.id} is not in the sudoers file. This incident will be reported.`);
           audit("AssumeRole", "root", 403);
@@ -320,12 +428,16 @@ export function Terminal() {
       return;
     }
     const pool =
-      parts[0] === "open"
+      parts[0] === "ssh"
+        ? PROJECTS.map((p) => p.id)
+        : parts[0] === "git"
+          ? ["log"]
+          : parts[0] === "open"
         ? [...PROJECTS.map((p) => p.id), "resume"]
         : parts[0] === "cd"
           ? SECTIONS.map((x) => x.id)
           : parts[0] === "ls"
-            ? ["projects", "deployments", "capabilities"]
+            ? ["projects", "deployments", "stack"]
             : [];
     const m = pool.filter((c) => c.startsWith(parts[1] ?? ""));
     if (m.length === 1) setInput(`${parts[0]} ${m[0]}`);
@@ -411,6 +523,23 @@ export function Terminal() {
             />
           </span>
         </label>
+      </div>
+      <div className="flex items-center gap-1.5 px-3.5 py-2 border-t border-white/[0.07] overflow-x-auto">
+        <span className="mono text-[11px] text-[#7c8491] shrink-0 mr-1">try</span>
+        {QUICK.map((c) => (
+          <button
+            key={c}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              run(c);
+              inputRef.current?.focus({ preventScroll: true });
+            }}
+            className="mono text-[11.5px] h-6 px-2 shrink-0 rounded-md border border-white/10 text-[#c9cfd8] hover:bg-white/[0.06] hover:border-white/20 transition-colors cursor-pointer"
+          >
+            {c}
+          </button>
+        ))}
       </div>
     </div>
   );

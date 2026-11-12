@@ -18,18 +18,18 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-8 pt-14 [content-visibility:auto] [contain-intrinsic-size:auto_900px]">
-      <div data-reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-4">
+    <section id={id} className="scroll-mt-8 pt-24 sm:pt-32 [content-visibility:auto] [contain-intrinsic-size:auto_900px]">
+      <div data-reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div className="min-w-0">
           <div className="flex items-baseline gap-2.5">
             <span className="mono text-[11px] text-faint tabular-nums">{index}</span>
-            <h2 className="text-[16px] font-semibold tracking-tight text-fg">
+            <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-fg">
               <a href={`#${id}`} className="hover:underline underline-offset-4 decoration-line-strong">
                 {title}
               </a>
             </h2>
           </div>
-          {description && <p className="text-muted mt-1 max-w-2xl">{description}</p>}
+          {description && <p className="text-muted mt-2 max-w-2xl text-[15px] leading-relaxed">{description}</p>}
         </div>
         {actions && <div className="flex items-center gap-2 shrink-0 flex-wrap">{actions}</div>}
       </div>
@@ -52,7 +52,7 @@ export function Status({ tone = "ok", children }: { tone?: keyof typeof STATUS_S
     <span className={`inline-flex items-center gap-1.5 text-[12px] font-medium whitespace-nowrap ${STATUS_STYLES[tone]}`}>
       <span className="relative flex size-2" aria-hidden>
         {tone === "ok" && <span className="ping absolute inset-0 rounded-full bg-current opacity-40" />}
-        <span className="relative size-2 rounded-full bg-current" />
+        <span className="led relative size-2 rounded-full bg-current" />
       </span>
       <span className="text-fg-2">{children}</span>
     </span>
@@ -75,7 +75,7 @@ export function KeyValue({ rows, cols = 2 }: { rows: { k: string; v: ReactNode }
 
 export function Chips({ items }: { items: readonly string[] }) {
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-wrap gap-1.5">
       {items.map((s) => (
         <span key={s} className="chip">
           {s}

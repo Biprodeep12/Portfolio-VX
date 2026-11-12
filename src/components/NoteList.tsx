@@ -14,7 +14,7 @@ export function NoteList({ notes, headingLevel = 3 }: { notes: Note[]; headingLe
           key={n.slug}
           href={`/notes/${n.slug}/`}
           style={{ ["--d" as string]: `${i * 90}ms` }}
-          className="rise group grid grid-cols-1 md:grid-cols-[150px_minmax(0,1fr)_auto] gap-1 md:gap-6 px-5 py-5 hover:bg-hover/60 transition-colors"
+          className="rise group grid grid-cols-1 md:grid-cols-[150px_minmax(0,1fr)_auto] gap-2 md:gap-8 px-6 sm:px-8 py-7 hover:bg-hover/60 transition-colors"
         >
           <div className="flex md:flex-col gap-2 md:gap-1 items-center md:items-start">
             <time dateTime={n.date} className="mono text-[12px] text-muted">
@@ -24,7 +24,7 @@ export function NoteList({ notes, headingLevel = 3 }: { notes: Note[]; headingLe
           </div>
           <div className="min-w-0">
             <H className="font-semibold text-[15px] tracking-tight text-fg group-hover:text-accent transition-colors">{n.title}</H>
-            <p className="mt-1 text-muted leading-relaxed">{n.summary}</p>
+            <p className="mt-1.5 text-muted leading-relaxed">{n.summary}</p>
           </div>
           <ArrowRight className="hidden md:block size-4 text-faint self-center transition-transform group-hover:translate-x-0.5 group-hover:text-fg" />
         </Link>

@@ -27,7 +27,7 @@ export type Decision =
   | { effect: "Allow"; skill: string; action: string; sid: string }
   | { effect: "ImplicitDeny"; query: string };
 
-/** Evaluate "can this account do X?" against the capabilities policy. */
+/** Evaluate "can this account do X?" against the stack. */
 export function evaluate(raw: string): Decision {
   const q = raw.trim();
   const key = slug(q).replace(/-/g, "");

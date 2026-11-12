@@ -28,7 +28,7 @@ export function DeploymentTimeline() {
 
   return (
     <div className="overflow-x-auto">
-      <div className="[--lane:118px] sm:[--lane:168px] sm:min-w-[640px] px-4 pt-4 pb-3">
+      <div className="[--lane:118px] sm:[--lane:168px] sm:min-w-[640px] px-5 sm:px-7 pt-6 pb-4">
         {/* axis */}
         <div className="relative ml-[var(--lane)] h-6 border-b border-line">
           {months.map((m) => {
@@ -37,7 +37,7 @@ export function DeploymentTimeline() {
               <div key={m} className="absolute bottom-0 h-full" style={{ left: `${pct(m)}%` }}>
                 <div className={`absolute bottom-0 w-px ${isJan ? "h-3 bg-line-strong" : "h-1.5 bg-line"}`} />
                 {(isJan || m % 3 === 0) && (
-                  <span className={`absolute bottom-3 -translate-x-1/2 mono text-[10.5px] whitespace-nowrap ${isJan ? "text-fg-2" : "text-faint"}`}>
+                  <span className={`absolute bottom-3 -translate-x-1/2 mono text-[10.5px] whitespace-nowrap ${isJan ? "text-fg-2" : "text-faint hidden sm:inline"}`}>
                     {isJan ? Math.floor(m / 12) : MONTHS[m % 12]}
                   </span>
                 )}
@@ -58,7 +58,7 @@ export function DeploymentTimeline() {
             const start = toIdx(r.start);
             const months = nowIdx - start + 1;
             return (
-              <div key={r.id} style={{ ["--d" as string]: `${300 + roles.indexOf(r) * 180}ms` }} className="flex items-center h-12 border-b border-line last:border-b-0 border-dashed">
+              <div key={r.id} style={{ ["--d" as string]: `${300 + roles.indexOf(r) * 180}ms` }} className="flex items-center h-14 border-b border-line last:border-b-0 border-dashed">
                 <div className="w-[var(--lane)] shrink-0 pr-3 sm:pr-4 min-w-0">
                   <div className="font-medium text-fg text-[12.5px] sm:text-[13px] leading-tight sm:truncate">{r.company}</div>
                   <div className="mono text-[11px] text-muted hidden sm:block">{r.id}</div>
@@ -75,7 +75,7 @@ export function DeploymentTimeline() {
                       <span className="hidden sm:inline">{r.title} · </span>
                       {months} mo
                     </span>
-                    {!r.self && <span className="ml-auto h-full w-6 shrink-0 ongoing" aria-hidden />}
+                    {!r.self && <span className="ml-auto h-full w-6 shrink-0 ongoing hidden sm:block" aria-hidden />}
                   </div>
                 </div>
               </div>

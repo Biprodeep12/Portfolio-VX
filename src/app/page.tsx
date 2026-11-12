@@ -1,8 +1,7 @@
 import { ArrowUpRight, FileText, Github, Instagram, Linkedin, Mail } from "lucide-react";
-import { ABOUT, BUILDING_SINCE, EXPERIENCE, PROFILE, PROJECTS, SERVICES, SKILLS } from "@/data/profile";
-import { slug } from "@/data/policy";
+import { ABOUT, BUILDING_SINCE, EXPERIENCE, PROFILE, PROJECTS, SERVICES } from "@/data/profile";
 import { Chips, Section, Status } from "@/components/ui";
-import { CopyButton, CopyField, JsonBlock, Tabs } from "@/components/client";
+import { CopyButton, CopyField } from "@/components/client";
 import { Frame } from "@/components/Frame";
 import { GitHubActivity } from "@/components/GitHubActivity";
 import { NoteList } from "@/components/NoteList";
@@ -13,10 +12,11 @@ import { ChevronRight } from "lucide-react";
 import { ProjectsView, ResumeButton } from "@/components/Details";
 import { CaseForm } from "@/components/CaseForm";
 import { Terminal } from "@/components/Terminal";
-import { CountUp, HalftonePortrait, PolicySimulator } from "@/components/Widgets";
+import { CountUp, HalftonePortrait } from "@/components/Widgets";
+import { StackEditorial } from "@/components/StackEditorial";
+import { LAYERS, STACK_COUNT } from "@/data/stack";
 import { DeploymentTimeline } from "@/components/Timeline";
 
-const capabilityCount = SKILLS.reduce((n, g) => n + g.items.length, 0);
 const TOTAL_PRS = EXPERIENCE.reduce((n, r) => n + (r.mergedPRs ?? 0), 0);
 const TOTAL_REPOS = EXPERIENCE.reduce((n, r) => n + (r.repos ?? 0), 0);
 const SERVICE_PATHS = ["svc/frontend", "svc/infra", "svc/perf"];
@@ -30,61 +30,52 @@ const CHANNELS = [
 ];
 
 export default function Home() {
-  const policy = {
-    Version: "2026-11-12",
-    Principal: PROFILE.accountId,
-    Statement: SKILLS.map((g) => ({
-      Sid: g.group.replace(/[^A-Za-z]/g, ""),
-      Effect: "Allow",
-      Action: g.items.map((s) => `${g.prefix}:${slug(s)}`),
-    })),
-  };
 
   return (
     <Frame>
-        {/* Hero */}
-        <header className="pt-10 sm:pt-16 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,500px)] gap-10 lg:gap-14 items-center">
-          <div>
-            <div className="hero-in flex items-center gap-1 mb-6 mono text-[11.5px] text-muted min-w-0">
+        {/* Hero: editorial name, role + actions below; the shell docks under the stats */}
+        <header className="pt-14 sm:pt-24">
+          <div className="hero-in flex flex-wrap items-center gap-x-4 gap-y-2 mono text-[12px] text-muted">
+            <span className="inline-flex items-center gap-1 min-w-0">
               <span className="truncate">
                 arn:bb:iam::0412:user/<span className="text-fg-2">{PROFILE.handle}</span>
               </span>
               <CopyButton value={`arn:bb:iam::0412:user/${PROFILE.handle}`} label="ARN copied" />
+            </span>
+            <span className="hidden sm:inline-flex items-center gap-2">
+              <span className="size-1.5 rounded-full bg-ok" aria-hidden />
+              {PROFILE.location} · {EXPERIENCE.length} active roles
+            </span>
+          </div>
+
+          <h1 className="mt-6 sm:mt-8 text-[clamp(3.25rem,10vw,7.5rem)] leading-[0.9] font-semibold tracking-[-0.05em] text-fg">
+            Biprodeep <br className="sm:hidden" />
+            Bose<span className="text-accent">.</span>
+          </h1>
+
+          <div className="mt-10 sm:mt-14 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-8 lg:gap-16 lg:items-end">
+            <div className="max-w-[580px]">
+              <p className="text-[19px] sm:text-[22px] font-medium tracking-[-0.015em] text-fg">{PROFILE.role}</p>
+              <p className="mt-3 text-[15px] leading-relaxed text-muted">{PROFILE.summary}</p>
             </div>
-            <h1 className="text-[44px] sm:text-[60px] leading-[0.98] font-semibold tracking-[-0.04em] text-fg">
-              Biprodeep{" "}
-              <br />
-              Bose<span className="text-accent">.</span>
-              <span className="sr-only">, </span>
-              <span className="block mt-5 text-[16px] sm:text-[17px] leading-normal font-medium text-fg-2 tracking-tight">{PROFILE.role}</span>
-            </h1>
-            <p className="mt-2.5 text-[14px] leading-relaxed text-muted max-w-[460px]">{PROFILE.summary}</p>
-            <div style={{ ["--d" as string]: "380ms" }} className="hero-in mt-7 flex items-center gap-2 flex-wrap">
-              <a href="#contact" className="btn-primary">
+            <div style={{ ["--d" as string]: "200ms" }} className="hero-in flex flex-wrap items-center gap-2 lg:justify-end">
+              <a href="#contact" className="btn-primary h-10 px-4 text-[14px] max-sm:w-full max-sm:justify-center">
                 Let&apos;s work together
               </a>
-              <ResumeButton />
-              <a href={PROFILE.github} target="_blank" rel="noopener noreferrer" className="btn-icon border border-line-strong" aria-label="GitHub">
+              <ResumeButton className="btn h-10 px-4 text-[14px] max-sm:flex-1 max-sm:justify-center" />
+              <a href={PROFILE.github} target="_blank" rel="noopener noreferrer" className="btn-icon size-10 border border-line-strong" aria-label="GitHub">
                 <Github className="size-4" />
               </a>
-              <a href={PROFILE.linkedin} target="_blank" rel="noopener noreferrer" className="btn-icon border border-line-strong" aria-label="LinkedIn">
+              <a href={PROFILE.linkedin} target="_blank" rel="noopener noreferrer" className="btn-icon size-10 border border-line-strong" aria-label="LinkedIn">
                 <Linkedin className="size-4" />
               </a>
             </div>
-            <p style={{ ["--d" as string]: "560ms" }} className="hero-in mt-8 text-[12px] text-muted hidden lg:block">
-              <span className="mono text-faint">→</span> The shell is real. Try <span className="mono text-fg-2">open strux</span> or{" "}
-              <span className="mono text-fg-2">can docker</span>.
-            </p>
-          </div>
-
-          <div className="hero-in" style={{ ["--d" as string]: "240ms" }}>
-            <Terminal />
           </div>
         </header>
 
         {/* Metric strip */}
-        <div data-reveal className="mt-14 panel grid grid-cols-2 lg:grid-cols-4 overflow-hidden">
-          <div className="px-5 py-4">
+        <div data-reveal className="mt-20 sm:mt-24 panel grid grid-cols-2 lg:grid-cols-4 overflow-hidden">
+          <div className="px-6 py-6">
             <div className="label">Experience</div>
             <div className="mt-2 flex items-baseline gap-1">
               <span className="text-[28px] leading-none font-semibold tracking-tight tabular-nums">2+</span>
@@ -92,14 +83,14 @@ export default function Home() {
             </div>
             <div className="mt-1.5 text-[12px] text-muted">Building since {BUILDING_SINCE.label}</div>
           </div>
-          <div className="px-5 py-4 border-l border-line">
+          <div className="px-6 py-6 border-l border-line">
             <div className="label">Merged PRs at work</div>
             <div className="mt-2 text-[28px] leading-none font-semibold tracking-tight tabular-nums">
               <CountUp value={TOTAL_PRS} />
             </div>
             <div className="mt-1.5 text-[12px] text-muted">Across {TOTAL_REPOS} production repos</div>
           </div>
-          <div className="px-5 py-4 border-t lg:border-t-0 lg:border-l border-line">
+          <div className="px-6 py-6 border-t lg:border-t-0 lg:border-l border-line">
             <div className="label">Live projects</div>
             <div className="mt-2 flex items-center gap-3">
               <span className="text-[28px] leading-none font-semibold tracking-tight tabular-nums">
@@ -113,22 +104,27 @@ export default function Home() {
             </div>
             <div className="mt-1.5 text-[12px] text-muted">{PROJECTS.map((p) => p.name).join(" · ")}</div>
           </div>
-          <div className="px-5 py-4 border-t border-l lg:border-t-0 border-line">
-            <div className="label">Capabilities</div>
+          <div className="px-6 py-6 border-t border-l lg:border-t-0 border-line">
+            <div className="label">Stack</div>
             <div className="mt-2 text-[28px] leading-none font-semibold tracking-tight tabular-nums">
-              <CountUp value={capabilityCount} />
+              <CountUp value={STACK_COUNT} />
             </div>
-            <div className="mt-2.5 flex h-1.5 rounded-full overflow-hidden gap-px" aria-label="Capabilities by group">
-              {SKILLS.map((g, i) => (
+            <div className="mt-2.5 flex h-1.5 rounded-full overflow-hidden gap-px" aria-label="Stack by layer">
+              {LAYERS.map((l, i) => (
                 <span
-                  key={g.group}
-                  title={`${g.group}: ${g.items.length}`}
-                  style={{ flex: g.items.length, opacity: 1 - i * 0.2 }}
+                  key={l.id}
+                  title={`${l.name}: ${l.skills.length}`}
+                  style={{ flex: l.skills.length, opacity: 1 - i * 0.13 }}
                   className="bg-fg"
                 />
               ))}
             </div>
           </div>
+        </div>
+
+        {/* CloudShell dock */}
+        <div data-reveal style={{ ["--d" as string]: "80ms" }} className="mt-6">
+          <Terminal />
         </div>
 
         {/* 01 Services */}
@@ -141,7 +137,7 @@ export default function Home() {
         >
           <div className="panel divide-y divide-line overflow-hidden">
             {SERVICES.map((s, i) => (
-              <article key={s.id} style={{ ["--d" as string]: `${i * 90}ms` }} className="rise grid grid-cols-1 md:grid-cols-[170px_minmax(0,1fr)_230px] gap-2 md:gap-8 px-5 py-5 hover:bg-hover/60 transition-colors">
+              <article key={s.id} style={{ ["--d" as string]: `${i * 90}ms` }} className="rise grid grid-cols-1 md:grid-cols-[170px_minmax(0,1fr)_240px] gap-3 md:gap-10 px-6 sm:px-8 py-7 hover:bg-hover/60 transition-colors">
                 <div className="mono text-[12px] text-muted pt-0.5">
                   <span className="text-faint">0{i + 1} </span>
                   {SERVICE_PATHS[i]}
@@ -182,7 +178,7 @@ export default function Home() {
               {[...EXPERIENCE]
                 .sort((a, b) => b.start.localeCompare(a.start))
                 .map((r, i) => (
-                  <article key={r.id} style={{ ["--d" as string]: `${500 + i * 120}ms` }} className="rise p-5">
+                  <article key={r.id} style={{ ["--d" as string]: `${500 + i * 120}ms` }} className="rise p-6 sm:p-8">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <h3 className="font-semibold text-[14px] text-fg">{r.title}</h3>
@@ -212,38 +208,14 @@ export default function Home() {
           </div>
         </Section>
 
-        {/* 04 Capabilities */}
-        <Section id="capabilities" index="04" title="Capabilities" description="The stack I work in. Ask the policy about anything.">
-          <div className="panel overflow-hidden mb-4">
-            <PolicySimulator />
-          </div>
-          <Tabs
-            tabs={[
-              {
-                id: "matrix",
-                label: "Statements",
-                content: (
-                  <div className="panel divide-y divide-line overflow-hidden">
-                    {SKILLS.map((g, i) => (
-                      <div key={g.group} style={{ ["--d" as string]: `${i * 70}ms` }} className="rise grid grid-cols-1 sm:grid-cols-[190px_minmax(0,1fr)_auto] gap-2 sm:gap-6 px-5 py-3.5 sm:items-center">
-                        <div>
-                          <div className="font-medium text-fg">{g.group}</div>
-                          <div className="mono text-[11px] text-muted">{g.prefix}:*</div>
-                        </div>
-                        <Chips items={g.items} />
-                        <span className="hidden sm:inline mono text-[11px] text-ok">Allow ×{g.items.length}</span>
-                      </div>
-                    ))}
-                  </div>
-                ),
-              },
-              {
-                id: "policy",
-                label: "policy.json",
-                content: <JsonBlock data={policy} filename="capabilities.policy.json" />,
-              },
-            ]}
-          />
+        {/* 04 Stack */}
+        <Section
+          id="stack"
+          index="04"
+          title="Stack"
+          description="What I reach for, front to back. Hover any of it to see where it has shipped."
+        >
+          <StackEditorial />
         </Section>
 
         {/* 05 Account */}
@@ -257,7 +229,7 @@ export default function Home() {
               </span>
             </div>
             <div className="flex flex-col">
-              <div className="px-6 py-6 border-b border-line">
+              <div className="px-7 sm:px-9 py-8 border-b border-line">
                 <div className="label mb-2">Philosophy</div>
                 <p className="text-[20px] sm:text-[22px] leading-snug font-medium tracking-tight text-fg max-w-[560px]">
                   “{ABOUT.philosophy}”
@@ -269,7 +241,7 @@ export default function Home() {
                   { k: "Approach", v: ABOUT.approach },
                   { k: "Off the clock", v: ABOUT.outside },
                 ].map((r) => (
-                  <div key={r.k} className="px-6 py-5">
+                  <div key={r.k} className="px-7 sm:px-9 py-7">
                     <div className="label mb-2">{r.k}</div>
                     <p className="text-fg-2 leading-relaxed">{r.v}</p>
                   </div>
@@ -289,7 +261,7 @@ export default function Home() {
                     ),
                   },
                 ].map((r, i) => (
-                  <div key={r.k} className={`px-6 py-3 border-line ${i % 2 ? "border-l" : ""} ${i >= 2 ? "border-t lg:border-t-0" : ""} ${i === 2 ? "lg:border-l" : ""}`}>
+                  <div key={r.k} className={`px-7 sm:px-9 py-4 border-line ${i % 2 ? "border-l" : ""} ${i >= 2 ? "border-t lg:border-t-0" : ""} ${i === 2 ? "lg:border-l" : ""}`}>
                     <dt className="label mb-0.5">{r.k}</dt>
                     <dd className="text-fg min-h-6 flex items-center">{r.v}</dd>
                   </div>
@@ -298,9 +270,9 @@ export default function Home() {
             </div>
           </div>
           {TESTIMONIALS.length > 0 && (
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
               {TESTIMONIALS.map((t) => (
-                <figure key={t.name} className="rise panel p-5 flex flex-col">
+                <figure key={t.name} className="rise panel p-6 sm:p-8 flex flex-col">
                   <blockquote className="text-fg-2 leading-relaxed">“{t.quote}”</blockquote>
                   <figcaption className="mt-4 text-[12.5px]">
                     {t.link ? (
@@ -351,11 +323,11 @@ export default function Home() {
           <div className="panel divide-y divide-line overflow-hidden">
             {FAQ.map((f, i) => (
               <details key={f.q} className="rise group" style={{ ["--d" as string]: `${i * 50}ms` }}>
-                <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer flex items-center gap-3 px-5 min-h-13 py-3.5 hover:bg-hover/60 transition-colors">
+                <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer flex items-center gap-4 px-6 sm:px-8 py-5 hover:bg-hover/60 transition-colors">
                   <ChevronRight className="size-4 text-muted shrink-0 transition-transform duration-200 group-open:rotate-90" />
                   <span className="font-medium text-fg">{f.q}</span>
                 </summary>
-                <p className="pl-12 pr-5 pb-4 -mt-1 text-fg-2 leading-relaxed max-w-3xl">{f.a}</p>
+                <p className="pl-[3.75rem] sm:pl-[4.25rem] pr-6 sm:pr-8 pb-6 -mt-1 text-fg-2 leading-relaxed max-w-3xl">{f.a}</p>
               </details>
             ))}
           </div>
@@ -364,14 +336,14 @@ export default function Home() {
         {/* 08 Support */}
         <Section id="contact" index="08" title="Support" description="Opportunities, side projects, or just a hello.">
           <CaseForm />
-          <div className="mt-4 panel grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[0.85fr_1.45fr_1fr_1fr_0.9fr] gap-px bg-line overflow-hidden">
+          <div className="mt-6 panel grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[0.85fr_1.45fr_1fr_1fr_0.9fr] gap-px bg-line overflow-hidden">
             {CHANNELS.map((c, i) => {
               const Icon = c.icon;
               const external = !c.href.startsWith("mailto:");
               return (
                 <div
                   key={c.name}
-                  className={`flex items-center gap-3 px-4 h-16 bg-panel hover:bg-hover transition-colors ${
+                  className={`flex items-center gap-3 px-5 h-[4.5rem] bg-panel hover:bg-hover transition-colors ${
                     i === CHANNELS.length - 1 && CHANNELS.length % 2 ? "sm:col-span-2 lg:col-span-1" : ""
                   }`}
                 >
