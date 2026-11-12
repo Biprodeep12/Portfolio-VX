@@ -139,11 +139,23 @@ export type Role = {
   description: string;
   skills: string[];
   status: "Active" | "Completed";
-  /** Measured numbers only (git history / merged PRs). */
-  metrics?: string[];
+  // Measured numbers only (git history / merged PRs). Edit these here; every
+  // label, total, FAQ answer and assistant fact is derived from them.
   mergedPRs?: number;
+  commits?: number;
   repos?: number;
+  scope?: string;
 };
+
+/** Display labels for a role's measured numbers, e.g. "297 merged PRs". */
+export function metricsFor(r: Role): string[] {
+  const out: string[] = [];
+  if (r.mergedPRs) out.push(`${r.mergedPRs.toLocaleString("en-US")} merged PRs`);
+  if (r.commits) out.push(`${r.commits.toLocaleString("en-US")}+ commits`);
+  if (r.repos) out.push(`${r.repos} repositor${r.repos === 1 ? "y" : "ies"}`);
+  if (r.scope) out.push(r.scope);
+  return out;
+}
 
 export const EXPERIENCE: Role[] = [
   {
@@ -157,9 +169,10 @@ export const EXPERIENCE: Role[] = [
       "Designed end-to-end testing frameworks and engineered scalable search architectures. Integrated analytics to track user behavior, significantly improving both release reliability and SEO discoverability.",
     skills: ["Next.js", "TypeScript", "Go", "Node.js", "Python", "Testing"],
     status: "Active",
-    metrics: ["297 merged PRs", "1,100+ commits", "9 repositories", "Web, Go, Node.js & Python services"],
     mergedPRs: 297,
+    commits: 1100,
     repos: 9,
+    scope: "Web, Go, Node.js & Python services",
   },
   {
     id: "dep-cotr",
@@ -172,19 +185,33 @@ export const EXPERIENCE: Role[] = [
       "Developed scalable applications with secure authentication and optimized REST APIs. Translated complex business requirements into maintainable, production-ready solutions using modern CI/CD pipelines.",
     skills: ["Next.js", "React Native", "NestJS", "MongoDB", "Socket.IO", "LiveKit"],
     status: "Active",
-    metrics: ["106 merged PRs", "1,300+ commits", "5 repositories", "Web, mobile, CRM & real-time chat"],
     mergedPRs: 106,
+    commits: 1300,
     repos: 5,
+    scope: "Web, mobile, CRM & real-time chat",
   },
 ];
 
 // When building started (first public project), separate from paid roles.
-// Drives the "Independent projects" lane on the timeline and the 2+ yrs stat.
+// Drives the "Independent projects" lane on the timeline and the experience stat.
 export const BUILDING_SINCE = {
   start: "2024-08",
   label: "Aug 2024",
   detail: "Personal and open-source projects on GitHub since the first public one in Aug 2024.",
 };
+
+/** Earliest paid role start as "YYYY-MM". */
+export const FIRST_ROLE_START = [...EXPERIENCE].sort((a, b) => a.start.localeCompare(b.start))[0].start;
+
+/** Time elapsed since a "YYYY-MM" month, computed at render so it never goes stale. */
+export function durationSince(ym: string, now = new Date()) {
+  const [y, m] = ym.split("-").map(Number);
+  const total = Math.max(0, (now.getFullYear() - y) * 12 + (now.getMonth() + 1 - m));
+  const years = Math.floor(total / 12);
+  const months = total % 12;
+  const label = [years ? `${years} yr${years > 1 ? "s" : ""}` : "", months ? `${months} mo` : ""].filter(Boolean).join(" ") || "under a month";
+  return { total, years, months, label };
+}
 
 /** Start of the earliest paid role, e.g. "Apr 2025". */
 export const FIRST_ROLE = [...EXPERIENCE].sort((a, b) => a.start.localeCompare(b.start))[0].period.split(" – ")[0];
@@ -234,7 +261,8 @@ export const ABOUT = {
     "I believe great products balance usability, performance, and clarity. Code should be scalable and readable — built with purpose. Smooth experiences matter, and details shape how software feels.",
 };
 
-export const RESUME = { file: "/Resume.pdf", name: "Resume.pdf", sizeKb: 134 };
+// Size is read from public/Resume.pdf at build time (next.config.ts), so swapping the PDF updates it.
+export const RESUME = { file: "/Resume.pdf", name: "Resume.pdf", sizeKb: Number(process.env.RESUME_KB) || 0 };
 
 export const SECTIONS = [
   { id: "services", label: "Services", api: "ListServices" },

@@ -2,7 +2,7 @@
 // Used two ways: as the fact sheet in the AI system prompt (server), and by the
 // offline answer engine (browser) when the model is unavailable.
 
-import { ABOUT, BUILDING_SINCE, EXPERIENCE, FIRST_ROLE, PROFILE, PROJECTS, RESUME, SECTIONS, SERVICES, SKILLS } from "./profile";
+import { ABOUT, BUILDING_SINCE, EXPERIENCE, FIRST_ROLE, FIRST_ROLE_START, PROFILE, PROJECTS, RESUME, SECTIONS, SERVICES, SKILLS, durationSince, metricsFor } from "./profile";
 import { evaluate } from "./policy";
 import { FAQ } from "./faq";
 
@@ -30,14 +30,16 @@ export function factSheet() {
   lines.push(`Role: ${PROFILE.role}`);
   lines.push(`Summary: ${PROFILE.summary}`);
   lines.push(`Works: ${PROFILE.location}`);
-  lines.push(`Experience: 2+ years building software (first public project ${BUILDING_SINCE.label}); professionally since ${FIRST_ROLE}.`);
+  lines.push(
+    `Experience: ${durationSince(FIRST_ROLE_START).label} professionally (since ${FIRST_ROLE}); building software for ${durationSince(BUILDING_SINCE.start).label} (first public project ${BUILDING_SINCE.label}).`,
+  );
   lines.push(`Contact: email ${PROFILE.email}; GitHub ${PROFILE.github}; LinkedIn ${PROFILE.linkedin}; Instagram ${PROFILE.instagram}`);
   lines.push(`Resume: ${PROFILE.site}${RESUME.file}`);
   lines.push("");
   lines.push("Current roles:");
   EXPERIENCE.forEach((r) =>
     lines.push(
-      `- ${r.title} at ${r.company} (${r.period}, ${r.location}): ${r.description} Stack: ${r.skills.join(", ")}.${r.metrics ? ` Measured: ${r.metrics.join(", ")}.` : ""}`,
+      `- ${r.title} at ${r.company} (${r.period}, ${r.location}): ${r.description} Stack: ${r.skills.join(", ")}.${metricsFor(r).length ? ` Measured: ${metricsFor(r).join(", ")}.` : ""}`,
     ),
   );
   lines.push("");
@@ -125,7 +127,7 @@ const INTENTS: { keys: string[]; answer: () => LocalAnswer }[] = [
   {
     keys: ["experience", "work", "job", "company", "companies", "employ", "career", "current", "intern", "role", "where does he work"],
     answer: () => ({
-      text: `He currently holds two remote roles:\n${EXPERIENCE.map((r) => `- **${r.title}** at ${r.company} (${r.period})`).join("\n")}\n\nHe's been building since ${BUILDING_SINCE.label}, so 2+ years overall.`,
+      text: `He currently holds two remote roles:\n${EXPERIENCE.map((r) => `- **${r.title}** at ${r.company} (${r.period})`).join("\n")}\n\nThat's ${durationSince(FIRST_ROLE_START).label} professionally; he's been building since ${BUILDING_SINCE.label} (${durationSince(BUILDING_SINCE.start).label}).`,
       actions: [{ kind: "section", label: "See deployments", id: "deployments" }],
     }),
   },
@@ -173,7 +175,9 @@ const INTENTS: { keys: string[]; answer: () => LocalAnswer }[] = [
   },
   {
     keys: ["year", "how long", "senior", "junior", "level"],
-    answer: () => ({ text: `2+ years: he started building in ${BUILDING_SINCE.label} (first public project) and has worked professionally since ${FIRST_ROLE}, currently at ${EXPERIENCE.map((e) => e.company).join(" and ")}.` }),
+    answer: () => ({
+      text: `${durationSince(FIRST_ROLE_START).label} of professional experience (since ${FIRST_ROLE}), currently at ${EXPERIENCE.map((e) => e.company).join(" and ")}. He started building in ${BUILDING_SINCE.label}, ${durationSince(BUILDING_SINCE.start).label} ago.`,
+    }),
   },
   {
     keys: ["educat", "degree", "college", "university", "study", "school"],

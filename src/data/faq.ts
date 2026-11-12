@@ -2,7 +2,16 @@
 // this site). Deliberately leaves out availability/relocation/salary, which
 // only Biprodeep can answer. `keys` feed the assistant's offline engine.
 
+import { BUILDING_SINCE, EXPERIENCE } from "./profile";
+
 export type Faq = { q: string; a: string; keys: string[] };
+
+const since = (period: string) => period.split(" – ")[0];
+const rolesNow = EXPERIENCE.map(
+  (r) =>
+    `${r.title} at ${r.company} since ${since(r.period)}` +
+    (r.mergedPRs ? ` (${r.mergedPRs} merged PRs across ${r.repos} repositories${r.scope ? `: ${r.scope}` : ""})` : ""),
+).join(" and ");
 
 export const FAQ: Faq[] = [
   {
@@ -12,7 +21,7 @@ export const FAQ: Faq[] = [
   },
   {
     q: "What is he working on right now?",
-    a: "Two remote roles in parallel: Software Development Engineer Intern at SaffronStays since Apr 2025 (297 merged PRs across 9 repositories) and Full-Stack Developer at Coding On The Rocks since Dec 2025 (106 merged PRs across 5 repositories: web, mobile, CRM and real-time chat).",
+    a: `${EXPERIENCE.length === 2 ? "Two" : EXPERIENCE.length} remote roles in parallel: ${rolesNow}.`,
     keys: ["right now", "currently", "working on", "these days"],
   },
   {
@@ -42,7 +51,7 @@ export const FAQ: Faq[] = [
   },
   {
     q: "Where can I see his code?",
-    a: "On GitHub: 40+ public repositories since his first public project in Aug 2024, from early JavaScript experiments to STRUX and MapGeox. Work code for employers is private.",
+    a: `On GitHub, going back to his first public project in ${BUILDING_SINCE.label}: from early JavaScript experiments to STRUX and MapGeox. Work code for employers is private.`,
     keys: ["code", "github", "repo", "source", "open source", "portfolio"],
   },
   {

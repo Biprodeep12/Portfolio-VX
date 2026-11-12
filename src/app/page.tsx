@@ -1,5 +1,5 @@
 import { ArrowUpRight, FileText, Github, Instagram, Linkedin, Mail } from "lucide-react";
-import { ABOUT, BUILDING_SINCE, EXPERIENCE, PROFILE, PROJECTS, SERVICES } from "@/data/profile";
+import { ABOUT, BUILDING_SINCE, EXPERIENCE, FIRST_ROLE, FIRST_ROLE_START, PROFILE, PROJECTS, SERVICES, durationSince, metricsFor } from "@/data/profile";
 import { Chips, Section, Status } from "@/components/ui";
 import { CopyButton, CopyField } from "@/components/client";
 import { Frame } from "@/components/Frame";
@@ -30,6 +30,9 @@ const CHANNELS = [
 ];
 
 export default function Home() {
+  // Recomputed on every (daily) regeneration, so the numbers stay true.
+  const PRO = durationSince(FIRST_ROLE_START);
+  const BUILD = durationSince(BUILDING_SINCE.start);
 
   return (
     <Frame>
@@ -78,10 +81,18 @@ export default function Home() {
           <div className="px-6 py-6">
             <div className="label">Experience</div>
             <div className="mt-2 flex items-baseline gap-1">
-              <span className="text-[28px] leading-none font-semibold tracking-tight tabular-nums">2+</span>
-              <span className="text-muted">yrs</span>
+              {PRO.years > 0 && (
+                <>
+                  <span className="text-[28px] leading-none font-semibold tracking-tight tabular-nums">{PRO.years}</span>
+                  <span className="text-muted mr-1.5">yr{PRO.years > 1 ? "s" : ""}</span>
+                </>
+              )}
+              <span className="text-[28px] leading-none font-semibold tracking-tight tabular-nums">{PRO.months}</span>
+              <span className="text-muted">mo</span>
             </div>
-            <div className="mt-1.5 text-[12px] text-muted">Building since {BUILDING_SINCE.label}</div>
+            <div className="mt-1.5 text-[12px] text-muted" title={`Building software for ${BUILD.label} (since ${BUILDING_SINCE.label})`}>
+              Professional, since {FIRST_ROLE}
+            </div>
           </div>
           <div className="px-6 py-6 border-l border-line">
             <div className="label">Merged PRs at work</div>
@@ -188,9 +199,9 @@ export default function Home() {
                       </div>
                       <Status>{r.status}</Status>
                     </div>
-                    {!!r.metrics?.length && (
+                    {metricsFor(r).length > 0 && (
                       <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1" aria-label="Measured impact">
-                        {r.metrics.map((m) => (
+                        {metricsFor(r).map((m) => (
                           <li key={m} className="mono text-[11.5px] text-fg-2 flex items-center gap-1.5">
                             <span className="size-1 rounded-full bg-accent" aria-hidden />
                             {m}

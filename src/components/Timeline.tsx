@@ -20,7 +20,7 @@ export function DeploymentTimeline() {
   const pct = (i: number) => ((i - first) / span) * 100;
   const nowFrac = pct(nowIdx + now.getDate() / 31);
   const months = Array.from({ length: span }, (_, k) => first + k);
-  // Paid roles plus the independent-projects lane that explains "2+ yrs".
+  // Paid roles plus the independent-projects lane (building since the first public project).
   const roles = [
     { id: "dep-independent", company: "Independent", title: "Personal & open-source projects", period: `${BUILDING_SINCE.label} – Present`, start: BUILDING_SINCE.start, self: true },
     ...EXPERIENCE.map((r) => ({ ...r, self: false })),

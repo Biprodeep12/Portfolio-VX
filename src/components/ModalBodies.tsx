@@ -3,7 +3,7 @@
 // Loaded on demand: none of this is needed until a modal opens.
 import Link from "next/link";
 import { ArrowUpRight, Copy, Download, ExternalLink, Linkedin, MessageSquareText } from "lucide-react";
-import { BUILDING_SINCE, EXPERIENCE, FIRST_ROLE, PROFILE, PROJECTS, RESUME, SERVICES, SKILLS, type Project } from "@/data/profile";
+import { BUILDING_SINCE, EXPERIENCE, FIRST_ROLE, PROFILE, PROJECTS, RESUME, SERVICES, SKILLS, type Project, metricsFor } from "@/data/profile";
 import { BrowserFrame, Chips, hostOf } from "./ui";
 import { CopyField, JsonBlock, Tabs, useToast } from "./client";
 import { useConsole } from "./Shell";
@@ -168,7 +168,7 @@ export function Tldr() {
                 <span className="text-muted"> · {r.company}</span>
                 <div className="text-[12px] text-muted">
                   {r.period}
-                  {r.metrics?.length ? ` · ${r.metrics.slice(0, 2).join(" · ")}` : ""}
+                  {metricsFor(r).length ? ` · ${metricsFor(r).slice(0, 2).join(" · ")}` : ""}
                 </div>
               </div>
             ))}
