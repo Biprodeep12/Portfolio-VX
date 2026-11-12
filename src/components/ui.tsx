@@ -18,7 +18,7 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-8 pt-14">
+    <section id={id} className="scroll-mt-8 pt-14 [content-visibility:auto] [contain-intrinsic-size:auto_900px]">
       <div data-reveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-4">
         <div className="min-w-0">
           <div className="flex items-baseline gap-2.5">

@@ -11,7 +11,7 @@ export default function NotFound() {
         <div className="mono text-muted mb-1">404 · ResourceNotFoundException</div>
         <h1 className="text-[18px] font-semibold mb-2">Resource not found</h1>
         <p className="text-muted mb-6">The page you requested doesn&apos;t exist in this account or was moved.</p>
-        <Link href="/" className="btn-primary">
+        <Link prefetch={false} href="/" className="btn-primary">
           <ArrowLeft className="size-3.5" /> Back to console
         </Link>
       </div>

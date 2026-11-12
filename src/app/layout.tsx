@@ -111,6 +111,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       </head>
       <body>
+        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[80] btn-primary">
+          Skip to content
+        </a>
+        <div className="scroll-progress" aria-hidden />
         <Shell>{children}</Shell>
       </body>
     </html>

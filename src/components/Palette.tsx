@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Boxes, CornerDownLeft, ExternalLink, FileText, Github, Hash, Mail, Moon, Search, type LucideIcon } from "lucide-react";
 import { PROFILE, PROJECTS, SECTIONS } from "@/data/profile";
+import { NOTES } from "@/data/notes";
 import { useToast } from "./client";
 import { useConsole } from "./Shell";
 
@@ -12,14 +13,17 @@ type Cmd = { id: string; label: string; hint: string; icon: LucideIcon; run: () 
 
 export default function CommandPalette({ onClose }: { onClose: () => void }) {
   const toast = useToast();
-  const { openProject, openResume, toggleTheme } = useConsole();
+  const { openProject, openResume, toggleTheme, openChat, openTldr } = useConsole();
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
   const listRef = useRef<HTMLUListElement>(null);
 
   const commands = useMemo<Cmd[]>(() => {
-    const jump = (id: string) => () =>
-      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const jump = (id: string) => () => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      else window.location.assign(`/#${id}`);
+    };
     const open = (href: string) => () => window.open(href, "_blank", "noopener,noreferrer");
     return [
       { id: "top", label: "Overview", hint: "Section", icon: Hash, run: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
@@ -31,6 +35,9 @@ export default function CommandPalette({ onClose }: { onClose: () => void }) {
         icon: Boxes,
         run: () => openProject(p.id),
       })),
+      { id: "tldr", label: "TL;DR: one-screen summary", hint: "Action", icon: FileText, run: openTldr },
+      ...NOTES.map((n) => ({ id: n.slug, label: n.title, hint: "Note", icon: FileText, run: () => window.location.assign(`/notes/${n.slug}/`) })),
+      { id: "assistant", label: "Ask the AI assistant", hint: "Action", icon: Hash, run: () => openChat() },
       { id: "resume", label: "Preview resume", hint: "Document", icon: FileText, run: openResume },
       { id: "theme", label: "Toggle light / dark theme", hint: "Action", icon: Moon, run: toggleTheme },
       {
@@ -45,7 +52,7 @@ export default function CommandPalette({ onClose }: { onClose: () => void }) {
       { id: "gh", label: "Open GitHub", hint: "External", icon: Github, run: open(PROFILE.github) },
       { id: "li", label: "Open LinkedIn", hint: "External", icon: ExternalLink, run: open(PROFILE.linkedin) },
     ];
-  }, [openProject, openResume, toggleTheme, toast]);
+  }, [openProject, openResume, toggleTheme, openChat, openTldr, toast]);
 
   const results = useMemo(() => {
     const s = q.trim().toLowerCase();

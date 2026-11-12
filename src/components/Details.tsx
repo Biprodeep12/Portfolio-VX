@@ -1,8 +1,8 @@
 "use client";
 
-import { ArrowUpRight, ChevronRight, Download, ExternalLink, Eye, FileText, LayoutGrid, List, Search, X } from "lucide-react";
+import { ArrowUpRight, ChevronRight, ExternalLink, FileText, LayoutGrid, List, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { PROFILE, PROJECTS, RESUME } from "@/data/profile";
+import { PROFILE, PROJECTS } from "@/data/profile";
 import { BrowserFrame, Chips, Status, hostOf } from "./ui";
 import { CopyButton } from "./client";
 import { useConsole } from "./Shell";
@@ -140,7 +140,7 @@ export function ProjectsView() {
           {rows.map((p, i) => (
             <article
               key={p.id}
-              className="rise lift group relative panel overflow-hidden flex flex-col hover:border-line-strong hover:shadow-[0_14px_36px_-18px_rgb(16_24_40/0.3)]"
+              className="rise lift group relative panel overflow-hidden flex flex-col hover:border-line-strong hover:shadow-[0_14px_36px_-18px_rgb(16_24_40/0.3)] has-[button:focus-visible]:ring-2 has-[button:focus-visible]:ring-accent has-[button:focus-visible]:ring-offset-2 has-[button:focus-visible]:ring-offset-canvas"
               style={{ ["--d" as string]: `${i * 90}ms` }}
             >
               <div className="p-3 pb-0">
@@ -240,55 +240,6 @@ export function ProjectsView() {
           Clear filters
         </button>
       )}
-    </div>
-  );
-}
-
-/* ================= Documents ================= */
-
-export function DocumentsTable() {
-  const { openResume } = useConsole();
-  const uri = `docs://${PROFILE.handle}/${RESUME.name}`;
-  return (
-    <div className="panel overflow-x-auto">
-      <table className="tbl min-w-[600px] [&_td]:whitespace-nowrap">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Size</th>
-            <th>Object URI</th>
-            <th className="text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <button onClick={openResume} className="inline-flex items-center gap-2 font-medium text-fg hover:text-accent cursor-pointer transition-colors">
-                <FileText className="size-4 text-muted" /> {RESUME.name}
-              </button>
-            </td>
-            <td className="text-fg-2">PDF</td>
-            <td className="text-fg-2 tabular-nums">{RESUME.sizeKb} KB</td>
-            <td>
-              <span className="inline-flex items-center gap-1">
-                <span className="mono text-muted">{uri}</span>
-                <CopyButton value={uri} label="URI copied" />
-              </span>
-            </td>
-            <td className="text-right">
-              <span className="inline-flex gap-1">
-                <button onClick={openResume} className="btn h-7 px-2">
-                  <Eye className="size-3.5" /> Preview
-                </button>
-                <a href={RESUME.file} download className="btn h-7 px-2">
-                  <Download className="size-3.5" /> Download
-                </a>
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
     </div>
   );
 }

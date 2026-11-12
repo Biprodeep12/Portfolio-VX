@@ -8,15 +8,19 @@ import { useConsole } from "./Shell";
 
 type Line = { id: number; kind: "in" | "out" | "err" | "log"; body: ReactNode };
 
-const COMMANDS = ["help", "whoami", "ls", "open", "can", "cd", "theme", "contact", "logs", "uptime", "date", "history", "clear", "sudo"];
+const COMMANDS = ["help", "tldr", "ask", "whoami", "ls", "open", "can", "cd", "theme", "contact", "logs", "uptime", "date", "history", "clear", "sudo"];
 
 const fmtTime = (t: number) => new Date(t).toTimeString().slice(0, 8);
 
 function LogLine({ e }: { e: AuditEvent }) {
+  // One line, columns on wide screens, truncated (never wrapped) on narrow ones.
   return (
-    <span className="text-[#7c8491]">
-      {fmtTime(e.t)} <span className="text-[#8fa6c9]">{e.action.padEnd(20, " ")}</span> {e.target.padEnd(16, " ")}{" "}
-      <span className={e.status < 400 ? "text-[#5fd68a]" : "text-[#f2777a]"}>{e.status}</span> {e.ms}ms
+    <span className="flex gap-2 whitespace-nowrap overflow-hidden text-[#7c8491]">
+      <span className="shrink-0">{fmtTime(e.t)}</span>
+      <span className="text-[#8fa6c9] shrink-0 sm:w-[20ch]">{e.action}</span>
+      <span className="truncate min-w-0 sm:w-[16ch] sm:flex-none">{e.target}</span>
+      <span className={`shrink-0 ${e.status < 400 ? "text-[#5fd68a]" : "text-[#f2777a]"}`}>{e.status}</span>
+      <span className="hidden sm:inline shrink-0">{e.ms}ms</span>
     </span>
   );
 }
@@ -44,7 +48,7 @@ const BOOT: Line[] = [
 ];
 
 export function Terminal() {
-  const { openProject, openResume, toggleTheme, theme } = useConsole();
+  const { openProject, openResume, toggleTheme, theme, openChat, openTldr } = useConsole();
   const [lines, setLines] = useState<Line[]>(BOOT);
   const [input, setInput] = useState("");
   const [session, setSession] = useState<{ id: string; zone: string } | null>(null);
@@ -89,6 +93,8 @@ export function Terminal() {
                 ["ls <what>", "projects · deployments · capabilities"],
                 ["open <id>", "open a project panel, or `open resume`"],
                 ["can <skill>", "simulate the capabilities policy"],
+                ["ask <question>", "ask the AI assistant"],
+                ["tldr", "the whole portfolio on one screen"],
                 ["cd <section>", "jump to a section of the page"],
                 ["contact", "how to reach me"],
                 ["logs", "your session's audit trail"],
@@ -266,6 +272,18 @@ export function Terminal() {
         case "clear":
           setLines([]);
           break;
+        case "tldr":
+          push("out", <span className="text-[#9aa3af]">opening the one-screen summary…</span>);
+          openTldr();
+          break;
+        case "ask":
+          if (!arg) {
+            push("err", "usage: ask <question>   e.g. ask what is strux?");
+            break;
+          }
+          push("out", <span className="text-[#9aa3af]">handing your question to the assistant…</span>);
+          openChat(arg);
+          break;
         case "sudo":
           push("err", `${s.id} is not in the sudoers file. This incident will be reported.`);
           audit("AssumeRole", "root", 403);
@@ -277,7 +295,7 @@ export function Terminal() {
           push("err", `${name}: command not found. try 'help'`);
       }
     },
-    [push, openProject, openResume, toggleTheme],
+    [push, openProject, openResume, toggleTheme, openChat, openTldr],
   );
 
   // After hydration: attach this visitor's session to the pre-rendered whoami.
@@ -335,7 +353,7 @@ export function Terminal() {
           <span className="size-1.5 rounded-full bg-[#5fd68a]" /> connected
         </span>
       </div>
-      <div ref={bodyRef} className="h-[300px] overflow-y-auto px-3.5 py-3 font-mono text-[12.5px] leading-[1.6]">
+      <div ref={bodyRef} className="h-[240px] sm:h-[300px] overflow-y-auto px-3.5 py-3 font-mono text-[12px] sm:text-[12.5px] leading-[1.6]">
         <div className="text-[#7c8491] mb-2">
           Biprodeep Console shell. Session is local to your browser; nothing is sent anywhere.
         </div>
@@ -389,7 +407,7 @@ export function Terminal() {
               spellCheck={false}
               autoComplete="off"
               autoCapitalize="off"
-              className="w-full bg-transparent outline-none caret-[#5fd68a] text-[#f3f5f7]"
+              className="w-full bg-transparent outline-none caret-[#5fd68a] text-[#f3f5f7] text-[16px] sm:text-[12.5px]"
             />
           </span>
         </label>

@@ -1,20 +1,28 @@
-import { ArrowUpRight, Github, Instagram, Linkedin, Mail } from "lucide-react";
-import { ABOUT, EXPERIENCE, PROFILE, PROJECTS, SERVICES, SKILLS } from "@/data/profile";
+import { ArrowUpRight, FileText, Github, Instagram, Linkedin, Mail } from "lucide-react";
+import { ABOUT, BUILDING_SINCE, EXPERIENCE, PROFILE, PROJECTS, SERVICES, SKILLS } from "@/data/profile";
 import { slug } from "@/data/policy";
 import { Chips, Section, Status } from "@/components/ui";
 import { CopyButton, CopyField, JsonBlock, Tabs } from "@/components/client";
-import { ConsoleBar } from "@/components/Shell";
-import { DocumentsTable, ProjectsView, ResumeButton } from "@/components/Details";
+import { Frame } from "@/components/Frame";
+import { GitHubActivity } from "@/components/GitHubActivity";
+import { NoteList } from "@/components/NoteList";
+import { NOTES } from "@/data/notes";
+import { FAQ } from "@/data/faq";
+import { TESTIMONIALS } from "@/data/testimonials";
+import { ChevronRight } from "lucide-react";
+import { ProjectsView, ResumeButton } from "@/components/Details";
 import { CaseForm } from "@/components/CaseForm";
 import { Terminal } from "@/components/Terminal";
-import { CountUp, DeploymentTimeline, HalftonePortrait, PolicySimulator, SessionMeter } from "@/components/Widgets";
+import { CountUp, HalftonePortrait, PolicySimulator } from "@/components/Widgets";
+import { DeploymentTimeline } from "@/components/Timeline";
 
-// Evaluated at build time: the footer shows when this copy was deployed.
-const BUILT_AT = new Date().toISOString();
 const capabilityCount = SKILLS.reduce((n, g) => n + g.items.length, 0);
+const TOTAL_PRS = EXPERIENCE.reduce((n, r) => n + (r.mergedPRs ?? 0), 0);
+const TOTAL_REPOS = EXPERIENCE.reduce((n, r) => n + (r.repos ?? 0), 0);
 const SERVICE_PATHS = ["svc/frontend", "svc/infra", "svc/perf"];
 
 const CHANNELS = [
+  { name: "Resume", icon: FileText, value: "Resume.pdf", href: "/Resume.pdf", copy: `${PROFILE.site}/Resume.pdf` },
   { name: "Email", icon: Mail, value: PROFILE.email, href: `mailto:${PROFILE.email}`, copy: PROFILE.email },
   { name: "GitHub", icon: Github, value: "Biprodeep12", href: PROFILE.github, copy: PROFILE.github },
   { name: "LinkedIn", icon: Linkedin, value: "biprodeep-bose", href: PROFILE.linkedin, copy: PROFILE.linkedin },
@@ -31,15 +39,9 @@ export default function Home() {
       Action: g.items.map((s) => `${g.prefix}:${slug(s)}`),
     })),
   };
-  const built = new Date(BUILT_AT);
 
   return (
-    <div className="relative overflow-x-clip">
-      <div className="grid-bg absolute inset-x-0 top-0 h-[620px] pointer-events-none" aria-hidden />
-
-      <div className="relative mx-auto max-w-[1160px] px-5 sm:px-8">
-        <ConsoleBar />
-
+    <Frame>
         {/* Hero */}
         <header className="pt-10 sm:pt-16 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,500px)] gap-10 lg:gap-14 items-center">
           <div>
@@ -50,15 +52,16 @@ export default function Home() {
               <CopyButton value={`arn:bb:iam::0412:user/${PROFILE.handle}`} label="ARN copied" />
             </div>
             <h1 className="text-[44px] sm:text-[60px] leading-[0.98] font-semibold tracking-[-0.04em] text-fg">
-              Biprodeep
+              Biprodeep{" "}
               <br />
               Bose<span className="text-accent">.</span>
+              <span className="sr-only">, </span>
+              <span className="block mt-5 text-[16px] sm:text-[17px] leading-normal font-medium text-fg-2 tracking-tight">{PROFILE.role}</span>
             </h1>
-            <p className="mt-5 text-[16px] sm:text-[17px] font-medium text-fg-2 tracking-tight">{PROFILE.role}</p>
             <p className="mt-2.5 text-[14px] leading-relaxed text-muted max-w-[460px]">{PROFILE.summary}</p>
             <div style={{ ["--d" as string]: "380ms" }} className="hero-in mt-7 flex items-center gap-2 flex-wrap">
               <a href="#contact" className="btn-primary">
-                Get in touch
+                Let&apos;s work together
               </a>
               <ResumeButton />
               <a href={PROFILE.github} target="_blank" rel="noopener noreferrer" className="btn-icon border border-line-strong" aria-label="GitHub">
@@ -87,17 +90,17 @@ export default function Home() {
               <span className="text-[28px] leading-none font-semibold tracking-tight tabular-nums">2+</span>
               <span className="text-muted">yrs</span>
             </div>
-            <div className="mt-1.5 text-[12px] text-muted">Shipping to production</div>
+            <div className="mt-1.5 text-[12px] text-muted">Building since {BUILDING_SINCE.label}</div>
           </div>
           <div className="px-5 py-4 border-l border-line">
-            <div className="label">Active deployments</div>
+            <div className="label">Merged PRs at work</div>
             <div className="mt-2 text-[28px] leading-none font-semibold tracking-tight tabular-nums">
-              <CountUp value={EXPERIENCE.length} />
+              <CountUp value={TOTAL_PRS} />
             </div>
-            <div className="mt-1.5 text-[12px] text-muted">{EXPERIENCE.map((e) => e.company).join(" · ")}</div>
+            <div className="mt-1.5 text-[12px] text-muted">Across {TOTAL_REPOS} production repos</div>
           </div>
           <div className="px-5 py-4 border-t lg:border-t-0 lg:border-l border-line">
-            <div className="label">Resources serving</div>
+            <div className="label">Live projects</div>
             <div className="mt-2 flex items-center gap-3">
               <span className="text-[28px] leading-none font-semibold tracking-tight tabular-nums">
                 <CountUp value={PROJECTS.length} />
@@ -108,7 +111,7 @@ export default function Home() {
                 ))}
               </span>
             </div>
-            <div className="mt-1.5 text-[12px] text-muted">Both answering requests</div>
+            <div className="mt-1.5 text-[12px] text-muted">{PROJECTS.map((p) => p.name).join(" · ")}</div>
           </div>
           <div className="px-5 py-4 border-t border-l lg:border-t-0 border-line">
             <div className="label">Capabilities</div>
@@ -168,12 +171,13 @@ export default function Home() {
           }
         >
           <ProjectsView />
+          <GitHubActivity />
         </Section>
 
         {/* 03 Deployments */}
-        <Section id="deployments" index="03" title="Deployments" description="Where I'm shipping right now. Both live, both remote.">
+        <Section id="deployments" index="03" title="Deployments" description="Two remote roles in parallel, on top of independent projects since Aug 2024.">
           <div className="panel overflow-hidden">
-            <DeploymentTimeline builtAt={BUILT_AT} />
+            <DeploymentTimeline />
             <div className="grid grid-cols-1 md:grid-cols-2 border-t border-line divide-y md:divide-y-0 md:divide-x divide-line">
               {[...EXPERIENCE]
                 .sort((a, b) => b.start.localeCompare(a.start))
@@ -188,6 +192,16 @@ export default function Home() {
                       </div>
                       <Status>{r.status}</Status>
                     </div>
+                    {!!r.metrics?.length && (
+                      <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1" aria-label="Measured impact">
+                        {r.metrics.map((m) => (
+                          <li key={m} className="mono text-[11.5px] text-fg-2 flex items-center gap-1.5">
+                            <span className="size-1 rounded-full bg-accent" aria-hidden />
+                            {m}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                     <p className="mt-3 text-muted leading-relaxed">{r.description}</p>
                     <div className="mt-3">
                       <Chips items={r.skills} />
@@ -238,7 +252,8 @@ export default function Home() {
             <div className="relative aspect-[4/5] md:aspect-auto md:min-h-[380px] border-b md:border-b-0 md:border-r border-line bg-subtle">
               <HalftonePortrait src="/img/pfp-320.webp" full="/img/pfp-640.webp" alt={PROFILE.name} />
               <span className="absolute left-3 bottom-3 mono text-[10.5px] text-muted bg-panel/90 border border-line rounded px-1.5 py-0.5 pointer-events-none">
-                hover to de-dither
+                <span className="only-hover">hover</span>
+                <span className="only-touch">tap</span> to de-dither
               </span>
             </div>
             <div className="flex flex-col">
@@ -282,26 +297,83 @@ export default function Home() {
               </dl>
             </div>
           </div>
+          {TESTIMONIALS.length > 0 && (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {TESTIMONIALS.map((t) => (
+                <figure key={t.name} className="rise panel p-5 flex flex-col">
+                  <blockquote className="text-fg-2 leading-relaxed">“{t.quote}”</blockquote>
+                  <figcaption className="mt-4 text-[12.5px]">
+                    {t.link ? (
+                      <a href={t.link} target="_blank" rel="noopener noreferrer" className="font-medium text-fg hover:text-accent">
+                        {t.name}
+                      </a>
+                    ) : (
+                      <span className="font-medium text-fg">{t.name}</span>
+                    )}
+                    <span className="text-muted">
+                      {" "}
+                      · {t.role}, {t.company}
+                    </span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          )}
         </Section>
 
-        {/* 06 Documents */}
-        <Section id="documents" index="06" title="Documents" description="One file. You know the one.">
-          <DocumentsTable />
+        {/* 06 Notes */}
+        <Section
+          id="notes"
+          index="06"
+          title="Notes"
+          description="How things were built and why: numbers, decisions, and what I'd change."
+          actions={
+            <a href="/notes/" className="btn h-7 px-2.5">
+              All notes <ArrowUpRight className="size-3.5" />
+            </a>
+          }
+        >
+          <NoteList notes={NOTES.slice(0, 3)} />
         </Section>
 
-        {/* 07 Support */}
-        <Section id="contact" index="07" title="Support" description="Opportunities, side projects, or just a hello.">
+        {/* 07 FAQ */}
+        <Section id="faq" index="07" title="FAQ" description="Quick answers, based on work he has actually shipped.">
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                mainEntity: FAQ.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+              }),
+            }}
+          />
+          <div className="panel divide-y divide-line overflow-hidden">
+            {FAQ.map((f, i) => (
+              <details key={f.q} className="rise group" style={{ ["--d" as string]: `${i * 50}ms` }}>
+                <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer flex items-center gap-3 px-5 min-h-13 py-3.5 hover:bg-hover/60 transition-colors">
+                  <ChevronRight className="size-4 text-muted shrink-0 transition-transform duration-200 group-open:rotate-90" />
+                  <span className="font-medium text-fg">{f.q}</span>
+                </summary>
+                <p className="pl-12 pr-5 pb-4 -mt-1 text-fg-2 leading-relaxed max-w-3xl">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </Section>
+
+        {/* 08 Support */}
+        <Section id="contact" index="08" title="Support" description="Opportunities, side projects, or just a hello.">
           <CaseForm />
-          <div className="mt-4 panel grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 overflow-hidden">
+          <div className="mt-4 panel grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[0.85fr_1.45fr_1fr_1fr_0.9fr] gap-px bg-line overflow-hidden">
             {CHANNELS.map((c, i) => {
               const Icon = c.icon;
               const external = !c.href.startsWith("mailto:");
               return (
                 <div
                   key={c.name}
-                  className={`flex items-center gap-3 px-4 h-16 hover:bg-hover transition-colors border-line ${i > 0 ? "border-t sm:border-t-0" : ""} ${
-                    i % 2 ? "sm:border-l" : ""
-                  } ${i >= 2 ? "sm:border-t lg:border-t-0" : ""} ${i === 2 ? "lg:border-l" : ""}`}
+                  className={`flex items-center gap-3 px-4 h-16 bg-panel hover:bg-hover transition-colors ${
+                    i === CHANNELS.length - 1 && CHANNELS.length % 2 ? "sm:col-span-2 lg:col-span-1" : ""
+                  }`}
                 >
                   <Icon className="size-4 text-muted shrink-0" />
                   <a href={c.href} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})} className="min-w-0 flex-1 group">
@@ -315,19 +387,6 @@ export default function Home() {
           </div>
         </Section>
 
-        <footer className="mt-20 mb-10 pt-5 border-t border-line grid grid-cols-1 md:grid-cols-3 gap-3 text-[12px] text-muted">
-          <span>
-            © {built.getFullYear()} {PROFILE.name} ·{" "}
-            <span className="mono" title={BUILT_AT}>
-              deployed {built.toISOString().slice(0, 10)}
-            </span>
-          </span>
-          <span className="md:text-center">
-            <SessionMeter />
-          </span>
-          <span className="md:text-right uppercase tracking-[0.18em] text-faint">{PROFILE.motto}</span>
-        </footer>
-      </div>
-    </div>
+    </Frame>
   );
 }

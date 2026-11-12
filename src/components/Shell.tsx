@@ -1,16 +1,21 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { ChevronLeft, ChevronRight, Moon, Search, Sun, X } from "lucide-react";
-import { PROFILE, PROJECTS, RESUME, SECTIONS } from "@/data/profile";
+import { ChevronLeft, ChevronRight, MessageSquareText, Moon, Search, Sun, X } from "lucide-react";
+import { PROFILE, PROJECTS, RESUME } from "@/data/profile";
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ToastProvider } from "./client";
 import { Status } from "./ui";
 import { audit } from "./audit";
 
 const ProjectDetail = dynamic(() => import("./ModalBodies").then((m) => m.ProjectDetail), { ssr: false, loading: () => <ModalSkeleton /> });
+const Tldr = dynamic(() => import("./ModalBodies").then((m) => m.Tldr), { ssr: false, loading: () => <ModalSkeleton /> });
 const ResumePreview = dynamic(() => import("./ModalBodies").then((m) => m.ResumePreview), { ssr: false, loading: () => <ModalSkeleton /> });
 const CommandPalette = dynamic(() => import("./Palette"), { ssr: false });
+const loadChat = () => import("./ChatPanel");
+const ChatPanel = dynamic(loadChat, { ssr: false });
 
 function ModalSkeleton() {
   return (
@@ -28,12 +33,14 @@ function ModalSkeleton() {
 
 /* ---------------- Console context ---------------- */
 
-type Drawer = { kind: "project"; id: string } | { kind: "resume" } | null;
+type Drawer = { kind: "project"; id: string } | { kind: "resume" } | { kind: "tldr" } | null;
 
 type Ctx = {
   openProject: (id: string) => void;
   openResume: () => void;
   openPalette: () => void;
+  openTldr: () => void;
+  openChat: (question?: string) => void;
   theme: "light" | "dark";
   toggleTheme: () => void;
 };
@@ -73,6 +80,8 @@ export function Shell({ children }: { children: ReactNode }) {
 
 function ShellInner({ children }: { children: ReactNode }) {
   const [palette, setPalette] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatAsk, setChatAsk] = useState<{ q: string; n: number } | undefined>();
   const [drawer, setDrawer] = useState<Drawer>(null);
   const { theme, toggle } = useTheme();
 
@@ -96,7 +105,11 @@ function ShellInner({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const pathname = usePathname();
+  useEffect(() => setDrawer(null), [pathname]);
+
   // Scroll reveal: anything marked [data-reveal] fades up once, then is left alone.
+  // Re-run per route so client-side navigation back to a page still reveals it.
   useEffect(() => {
     const els = document.querySelectorAll<HTMLElement>("[data-reveal]");
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -114,28 +127,7 @@ function ShellInner({ children }: { children: ReactNode }) {
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, []);
-
-  // Log each section the first time it scrolls into view.
-  useEffect(() => {
-    const seen = new Set<string>();
-    const io = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((e) => {
-          if (!e.isIntersecting || seen.has(e.target.id)) return;
-          seen.add(e.target.id);
-          const sec = SECTIONS.find((x) => x.id === e.target.id);
-          if (sec) audit(sec.api, `/${sec.id}`);
-          io.unobserve(e.target);
-        }),
-      { rootMargin: "0px 0px -40% 0px" },
-    );
-    SECTIONS.forEach((x) => {
-      const el = document.getElementById(x.id);
-      if (el) io.observe(el);
-    });
-    return () => io.disconnect();
-  }, []);
+  }, [pathname]);
 
   // Deep links: /#strux, /#mapgeox, /#resume open the details panel.
   useEffect(() => {
@@ -160,6 +152,14 @@ function ShellInner({ children }: { children: ReactNode }) {
         audit("GetObject", "Resume.pdf");
       },
       openPalette: () => setPalette(true),
+      openTldr: () => {
+        setDrawer({ kind: "tldr" });
+        audit("GetSummary", "tl;dr");
+      },
+      openChat: (question) => {
+        setChatOpen(true);
+        if (question) setChatAsk({ q: question, n: Date.now() });
+      },
       theme,
       toggleTheme: () => {
         toggle();
@@ -245,6 +245,28 @@ function ShellInner({ children }: { children: ReactNode }) {
           <ResumePreview />
         </Modal>
       )}
+      {drawer?.kind === "tldr" && (
+        <Modal
+          onClose={closeDrawer}
+          label="TL;DR"
+          size="lg"
+          header={(close) => (
+            <>
+              <div className="min-w-0 flex-1">
+                <div className="font-semibold text-[16px] tracking-tight text-fg">TL;DR</div>
+                <div className="mono text-[11px] text-muted mt-0.5">the whole portfolio, one screen</div>
+              </div>
+              <button className="btn-icon size-8" onClick={close} aria-label="Close">
+                <X className="size-4" />
+              </button>
+            </>
+          )}
+        >
+          <Tldr />
+        </Modal>
+      )}
+      {chatOpen && <ChatPanel onClose={() => setChatOpen(false)} ask={chatAsk} />}
+      <ChatLauncher open={chatOpen} onToggle={() => setChatOpen((o) => !o)} />
       {palette && <CommandPalette onClose={() => setPalette(false)} />}
     </ConsoleCtx.Provider>
   );
@@ -348,7 +370,11 @@ function Modal({
 
 const HINTS = ["strux", "deployments", "resume", "copy email", "mapgeox", "dark theme"];
 
-/** Rotating ghost text so the search field shows what it can do. */
+/**
+ * Rotating ghost text so the search field shows what it can do. Starts once
+ * the page has settled, runs through the hints once, then rests, so it
+ * never competes with load or keeps the main thread busy.
+ */
 function useGhost(words: string[]) {
   const [text, setText] = useState(words[0]);
   useEffect(() => {
@@ -356,7 +382,13 @@ function useGhost(words: string[]) {
     let w = 0;
     let i = words[0].length;
     let deleting = true;
-    let t = window.setTimeout(function step() {
+    let shown = 0;
+    let t = 0;
+    const step = () => {
+      if (document.hidden) {
+        t = window.setTimeout(step, 1000);
+        return;
+      }
       const word = words[w];
       if (deleting) {
         i--;
@@ -370,35 +402,37 @@ function useGhost(words: string[]) {
         const next = words[w];
         i++;
         setText(next.slice(0, i));
-        if (i >= next.length) {
+        if (i < next.length) t = window.setTimeout(step, 70);
+        else if (++shown < words.length) {
           deleting = true;
           t = window.setTimeout(step, 2200);
-        } else t = window.setTimeout(step, 70);
+        }
       }
-    }, 2600);
+    };
+    t = window.setTimeout(step, 6000);
     return () => window.clearTimeout(t);
   }, [words]);
   return text;
 }
 
 export function ConsoleBar() {
-  const { openPalette, theme, toggleTheme } = useConsole();
+  const { openPalette, openTldr, theme, toggleTheme } = useConsole();
   const ghost = useGhost(HINTS);
   const dark = theme === "dark";
 
   return (
     <div className="flex items-center gap-3 h-16">
-      <a href="#" className="flex items-center gap-2.5 shrink-0 group" title="Back to top">
+      <Link prefetch={false} href="/" className="flex items-center gap-2.5 shrink-0 group" title="Home">
         <Logo />
         <span className="leading-none">
           <span className="block text-[13px] font-semibold tracking-tight text-fg">Biprodeep Bose</span>
           <span className="block mono text-[10.5px] text-muted mt-1">console · v26.11</span>
         </span>
-      </a>
+      </Link>
 
       <button
         onClick={openPalette}
-        className="ml-auto sm:mx-auto flex items-center gap-2.5 h-9 sm:w-[360px] rounded-lg border border-line bg-panel/80 backdrop-blur px-2.5 text-left cursor-pointer hover:border-line-strong transition-colors shadow-[0_1px_2px_rgb(16_24_40/0.04)]"
+        className="ml-auto sm:mx-auto flex items-center gap-2.5 h-9 sm:w-[360px] rounded-lg border border-line bg-panel px-2.5 text-left cursor-pointer hover:border-line-strong transition-colors shadow-[0_1px_2px_rgb(16_24_40/0.04)]"
       >
         <Search className="size-4 text-muted shrink-0" aria-hidden />
         <span className="flex-1 min-w-0 flex items-center text-[13px]">
@@ -409,6 +443,14 @@ export function ConsoleBar() {
           <span className="hidden sm:inline w-px h-3.5 bg-accent ml-px caret-blink" aria-hidden />
         </span>
         <kbd className="kbd hidden sm:inline">Ctrl K</kbd>
+      </button>
+
+      <button
+        onClick={openTldr}
+        className="shrink-0 h-9 px-3 rounded-lg border border-line bg-panel/80 text-[12.5px] font-semibold text-fg-2 hover:text-fg hover:border-line-strong transition-colors cursor-pointer mono"
+        title="One-screen summary"
+      >
+        TL;DR
       </button>
 
       <button
@@ -444,5 +486,37 @@ export function Logo({ size = 28 }: { size?: number }) {
       <rect x="11.5" y="15" width="10" height="7" rx="2" className="fill-panel" />
       <circle cx="18.5" cy="18.5" r="1.4" className="fill-ok" />
     </svg>
+  );
+}
+
+/* ---------------- Assistant launcher ---------------- */
+
+function ChatLauncher({ open, onToggle }: { open: boolean; onToggle: () => void }) {
+  // Warm the panel's chunk on intent so opening feels instant.
+  const prefetch = () => void loadChat();
+  return (
+    <button
+      onClick={onToggle}
+      onMouseEnter={prefetch}
+      onFocus={prefetch}
+      onTouchStart={prefetch}
+      aria-label={open ? "Close assistant" : "Ask the console assistant"}
+      aria-expanded={open}
+      className={`launcher-in fixed z-40 bottom-5 right-5 h-12 rounded-full bg-fg text-panel shadow-[0_10px_30px_-10px_rgb(0_0_0/0.45)] flex items-center gap-2 cursor-pointer transition-[transform,padding] duration-300 hover:-translate-y-0.5 active:translate-y-0 ${
+        open ? "px-3.5 max-sm:hidden" : "pl-3.5 pr-4"
+      }`}
+    >
+      {open ? (
+        <X className="size-5" />
+      ) : (
+        <>
+          <span className="relative">
+            <MessageSquareText className="size-5" />
+            <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-ok ring-2 ring-fg" aria-hidden />
+          </span>
+          <span className="text-[13px] font-medium hidden sm:inline">Ask the console</span>
+        </>
+      )}
+    </button>
   );
 }

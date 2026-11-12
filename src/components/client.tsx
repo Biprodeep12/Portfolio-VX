@@ -22,7 +22,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastCtx.Provider value={push}>
       {children}
-      <div className="fixed bottom-4 right-4 z-[70] flex flex-col gap-2" role="status" aria-live="polite">
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[70] flex flex-col items-center gap-2" role="status" aria-live="polite">
         {toasts.map((t) => (
           <div
             key={t.id}
@@ -56,7 +56,7 @@ export function CopyButton({ value, label = "Copied to clipboard" }: { value: st
   return (
     <button
       type="button"
-      className="btn-icon size-6 shrink-0"
+      className="btn-icon size-6 shrink-0 relative after:absolute after:-inset-2 after:content-['']"
       aria-label={`Copy ${value}`}
       onClick={async (e) => {
         e.stopPropagation();

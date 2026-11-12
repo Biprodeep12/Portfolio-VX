@@ -1,88 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { EXPERIENCE, PROFILE } from "@/data/profile";
+import { PROFILE } from "@/data/profile";
 import { evaluate } from "@/data/policy";
 import { audit, getSession } from "./audit";
-
-/* ================= Deployment timeline ================= */
-
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const toIdx = (ym: string) => {
-  const [y, m] = ym.split("-").map(Number);
-  return y * 12 + (m - 1);
-};
-
-export function DeploymentTimeline({ builtAt }: { builtAt: string }) {
-  const [now, setNow] = useState(() => new Date(builtAt));
-  useEffect(() => setNow(new Date()), []);
-
-  const nowIdx = now.getFullYear() * 12 + now.getMonth();
-  const first = Math.min(...EXPERIENCE.map((r) => toIdx(r.start))) - 1;
-  const last = nowIdx + 2;
-  const span = last - first;
-  const pct = (i: number) => ((i - first) / span) * 100;
-  const nowFrac = pct(nowIdx + now.getDate() / 31);
-  const months = Array.from({ length: span }, (_, k) => first + k);
-  const roles = [...EXPERIENCE].sort((a, b) => a.start.localeCompare(b.start));
-
-  return (
-    <div className="overflow-x-auto">
-      <div className="min-w-[640px] px-4 pt-4 pb-3">
-        {/* axis */}
-        <div className="relative ml-[168px] h-6 border-b border-line">
-          {months.map((m) => {
-            const isJan = m % 12 === 0;
-            return (
-              <div key={m} className="absolute bottom-0 h-full" style={{ left: `${pct(m)}%` }}>
-                <div className={`absolute bottom-0 w-px ${isJan ? "h-3 bg-line-strong" : "h-1.5 bg-line"}`} />
-                {(isJan || m % 3 === 0) && (
-                  <span className={`absolute bottom-3 -translate-x-1/2 mono text-[10.5px] whitespace-nowrap ${isJan ? "text-fg-2" : "text-faint"}`}>
-                    {isJan ? Math.floor(m / 12) : MONTHS[m % 12]}
-                  </span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* lanes */}
-        <div className="relative">
-          <div
-            className="absolute top-0 bottom-0 w-px bg-accent z-10 pointer-events-none"
-            style={{ left: `calc(168px + (100% - 168px) * ${nowFrac / 100})` }}
-          >
-            <span className="absolute -top-0.5 left-1.5 mono text-[10px] text-accent whitespace-nowrap">now</span>
-          </div>
-          {roles.map((r) => {
-            const start = toIdx(r.start);
-            const months = nowIdx - start + 1;
-            return (
-              <div key={r.id} style={{ ["--d" as string]: `${300 + roles.indexOf(r) * 180}ms` }} className="flex items-center h-12 border-b border-line last:border-b-0 border-dashed">
-                <div className="w-[168px] shrink-0 pr-4 min-w-0">
-                  <div className="font-medium text-fg truncate">{r.company}</div>
-                  <div className="mono text-[11px] text-muted">{r.id}</div>
-                </div>
-                <div className="relative flex-1 h-full">
-                  <div
-                    className="draw absolute top-1/2 -translate-y-1/2 h-6 rounded-[4px] bg-accent-soft border border-accent/40 flex items-center overflow-hidden"
-                    style={{ left: `${pct(start)}%`, width: `${nowFrac - pct(start)}%` }}
-                    title={`${r.title} · ${r.period}`}
-                  >
-                    <span className="px-2 text-[11.5px] font-medium text-accent truncate">
-                      {r.title} · {months} mo
-                    </span>
-                    <span className="ml-auto h-full w-6 shrink-0 ongoing" aria-hidden />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /* ================= Policy simulator ================= */
 
@@ -91,7 +12,10 @@ const EXAMPLES = ["docker", "postgres", "kubernetes", "go", "rust", "redis"];
 export function PolicySimulator() {
   const [q, setQ] = useState("");
   const [last, setLast] = useState<string | null>(null);
-  const decision = useMemo(() => (q.trim() ? evaluate(q) : null), [q]);
+  // Until the visitor types, show a worked example so the panel isn't empty.
+  const shown = q.trim() || "docker";
+  const isExample = !q.trim();
+  const decision = useMemo(() => evaluate(shown), [shown]);
 
   const commit = (v: string) => {
     if (!v.trim() || v === last) return;
@@ -132,17 +56,17 @@ export function PolicySimulator() {
           ))}
         </div>
       </div>
-      <div className="p-4 mono text-[12px] leading-[1.7] bg-code min-h-[148px]">
-        {!decision && <div className="text-faint">// result of the policy evaluation shows up here</div>}
+      <div className="p-4 mono text-[12px] leading-[1.7] bg-code min-h-[96px] md:min-h-[148px]">
+        {isExample && <div className="text-faint">// example: try your own on the left</div>}
         {decision && (
-          <div className="anim-in" key={q}>
+          <div className={`anim-in ${isExample ? "opacity-70" : ""}`} key={shown}>
             <div>
               <span className="text-muted">principal </span>
               <span className="text-fg-2">{PROFILE.accountId}</span>
             </div>
             <div>
               <span className="text-muted">request{"   "}</span>
-              <span className="text-fg-2">&quot;{q.trim()}&quot;</span>
+              <span className="text-fg-2">&quot;{shown}&quot;</span>
             </div>
             {decision.effect === "Allow" ? (
               <>
@@ -186,6 +110,7 @@ export function PolicySimulator() {
 /* ================= Halftone portrait ================= */
 
 export function HalftonePortrait({ src, full, alt }: { src: string; full: string; alt: string }) {
+  const [on, setOn] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -199,6 +124,7 @@ export function HalftonePortrait({ src, full, alt }: { src: string; full: string
     const draw = () => {
       if (!img.complete || !img.naturalWidth) return;
       const { width: w, height: h } = wrap.getBoundingClientRect();
+      if (w < 1 || h < 1) return; // detached or hidden (e.g. mid route change)
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
@@ -261,8 +187,21 @@ export function HalftonePortrait({ src, full, alt }: { src: string; full: string
   }, [src]);
 
   return (
-    <div ref={wrapRef} className="group relative w-full h-full overflow-hidden">
-      <canvas ref={canvasRef} className="absolute inset-0 size-full transition-opacity duration-500 group-hover:opacity-0" aria-hidden />
+    <div
+      ref={wrapRef}
+      role="button"
+      tabIndex={0}
+      aria-pressed={on}
+      aria-label="Toggle between dithered and real photo"
+      onClick={() => setOn((v) => !v)}
+      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), setOn((v) => !v))}
+      className="group relative w-full h-full overflow-hidden cursor-pointer"
+    >
+      <canvas
+        ref={canvasRef}
+        className={`absolute inset-0 size-full transition-opacity duration-500 [@media(hover:hover)]:group-hover:opacity-0 ${on ? "opacity-0" : ""}`}
+        aria-hidden
+      />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={full}
@@ -271,7 +210,7 @@ export function HalftonePortrait({ src, full, alt }: { src: string; full: string
         decoding="async"
         width={640}
         height={857}
-        className="absolute inset-0 size-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        className={`absolute inset-0 size-full object-cover transition-opacity duration-500 [@media(hover:hover)]:group-hover:opacity-100 ${on ? "opacity-100" : "opacity-0"}`}
       />
     </div>
   );

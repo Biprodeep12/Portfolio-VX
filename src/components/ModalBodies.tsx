@@ -1,10 +1,12 @@
 "use client";
 
 // Loaded on demand: none of this is needed until a modal opens.
-import { ArrowUpRight, Download, ExternalLink } from "lucide-react";
-import { PROFILE, RESUME, type Project } from "@/data/profile";
+import Link from "next/link";
+import { ArrowUpRight, Copy, Download, ExternalLink, Linkedin, MessageSquareText } from "lucide-react";
+import { BUILDING_SINCE, EXPERIENCE, FIRST_ROLE, PROFILE, PROJECTS, RESUME, SERVICES, SKILLS, type Project } from "@/data/profile";
 import { BrowserFrame, Chips, hostOf } from "./ui";
-import { CopyField, JsonBlock, Tabs } from "./client";
+import { CopyField, JsonBlock, Tabs, useToast } from "./client";
+import { useConsole } from "./Shell";
 
 export function ProjectDetail({ p }: { p: Project }) {
   const config = {
@@ -54,6 +56,9 @@ export function ProjectDetail({ p }: { p: Project }) {
             <a href={p.url} target="_blank" rel="noopener noreferrer" className="btn-primary">
               Open live site <ArrowUpRight className="size-3.5" />
             </a>
+            <Link prefetch={false} href={`/projects/${p.id}/`} className="btn">
+              Full write-up
+            </Link>
             <span className="text-[11.5px] text-faint hidden sm:inline">
               <kbd className="kbd">←</kbd> <kbd className="kbd">→</kbd> switch · <kbd className="kbd">esc</kbd> close
             </span>
@@ -81,7 +86,7 @@ const ROLE: Record<string, string> = {
   Redis: "cache",
 };
 
-function Topology({ p }: { p: Project }) {
+export function Topology({ p }: { p: Project }) {
   const nodes = [{ name: "Visitor", role: "client" }, ...p.stack.map((s) => ({ name: s, role: ROLE[s] ?? "service" }))];
   return (
     <div className="flex flex-col gap-3">
@@ -130,3 +135,86 @@ export function ResumePreview() {
   );
 }
 
+
+/* ---------------- TL;DR: the portfolio on one screen ---------------- */
+
+const KEY_STACK = ["TypeScript", "React", "Next.js", "Node.js", "Python", "Go", "AWS", "Docker", "Linux", "PostgreSQL", "MongoDB", "Redis"];
+
+export function Tldr() {
+  const { openResume, openChat } = useConsole();
+  const toast = useToast();
+  const all = new Set(SKILLS.flatMap((g) => g.items));
+  const stack = KEY_STACK.filter((s) => all.has(s));
+
+  return (
+    <div className="p-5 sm:p-6 flex flex-col gap-6">
+      <div className="flex items-center gap-4">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/img/pfp-320.webp" alt="" width={56} height={56} className="size-14 rounded-lg object-cover grayscale border border-line" />
+        <div className="min-w-0">
+          <div className="text-[18px] font-semibold tracking-tight text-fg">{PROFILE.name}</div>
+          <div className="text-fg-2">{PROFILE.role}</div>
+          <div className="text-[12px] text-muted mt-0.5">{PROFILE.location} · building since {BUILDING_SINCE.label}, professionally since {FIRST_ROLE}</div>
+        </div>
+      </div>
+
+      <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+        <div>
+          <dt className="label mb-1.5">Now</dt>
+          <dd className="flex flex-col gap-1.5">
+            {EXPERIENCE.map((r) => (
+              <div key={r.id}>
+                <span className="font-medium text-fg">{r.title}</span>
+                <span className="text-muted"> · {r.company}</span>
+                <div className="text-[12px] text-muted">
+                  {r.period}
+                  {r.metrics?.length ? ` · ${r.metrics.slice(0, 2).join(" · ")}` : ""}
+                </div>
+              </div>
+            ))}
+          </dd>
+        </div>
+        <div>
+          <dt className="label mb-1.5">Built</dt>
+          <dd className="flex flex-col gap-1.5">
+            {PROJECTS.map((p) => (
+              <Link prefetch={false} key={p.id} href={`/projects/${p.id}/`} className="group">
+                <span className="font-medium text-fg group-hover:text-accent transition-colors">{p.name}</span>
+                <span className="text-muted"> · {p.title}</span>
+                <div className="text-[12px] text-muted">{p.stack.join(", ")}</div>
+              </Link>
+            ))}
+          </dd>
+        </div>
+        <div>
+          <dt className="label mb-1.5">Focus</dt>
+          <dd className="text-fg-2">{SERVICES.map((s) => s.name).join(" · ")}</dd>
+        </div>
+        <div>
+          <dt className="label mb-1.5">Key stack</dt>
+          <dd>
+            <Chips items={stack} />
+          </dd>
+        </div>
+      </dl>
+
+      <div className="flex flex-wrap gap-2 pt-1 border-t border-line -mx-5 sm:-mx-6 px-5 sm:px-6 pt-5">
+        <button onClick={openResume} className="btn-primary">
+          <Download className="size-3.5" /> Resume
+        </button>
+        <button
+          className="btn"
+          onClick={() => navigator.clipboard?.writeText(PROFILE.email).then(() => toast("Email copied"))}
+        >
+          <Copy className="size-3.5" /> {PROFILE.email}
+        </button>
+        <a href={PROFILE.linkedin} target="_blank" rel="noopener noreferrer" className="btn">
+          <Linkedin className="size-3.5" /> LinkedIn
+        </a>
+        <button onClick={() => openChat()} className="btn">
+          <MessageSquareText className="size-3.5" /> Ask the assistant
+        </button>
+      </div>
+    </div>
+  );
+}

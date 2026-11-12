@@ -4,8 +4,8 @@ import sharp from "sharp";
 
 const JOBS = [
   { src: "public/pfp.webp", name: "pfp", widths: [320, 640], quality: 72 },
-  { src: "public/projectX.webp", name: "projectX", widths: [640, 1080], quality: 70 },
-  { src: "public/project1.0x.webp", name: "project1.0x", widths: [640, 1080], quality: 70 },
+  { src: "public/projectX.webp", name: "projectX", widths: [640, 828, 1080], quality: 70 },
+  { src: "public/project1.0x.webp", name: "project1.0x", widths: [640, 828, 1080], quality: 70 },
 ];
 
 for (const job of JOBS) {
