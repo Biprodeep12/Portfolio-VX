@@ -29,7 +29,7 @@ export function StackEditorial() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 border-b border-line">
         {LAYERS.map((layer, i) => (
           <div key={layer.id} style={{ ["--d" as string]: `${i * 60}ms` }} className="rise border-t border-line py-5">
-            <div className="flex items-baseline justify-between gap-3 mb-3">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 mb-3">
               <span className="flex items-baseline gap-2.5">
                 <span className="mono text-[11.5px] text-faint">{String(i + 1).padStart(2, "0")}</span>
                 <span className="text-[12px] font-medium text-muted uppercase tracking-[0.12em]">{ROW_NAMES[layer.id] ?? layer.name}</span>

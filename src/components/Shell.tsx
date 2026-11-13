@@ -460,16 +460,18 @@ export function ConsoleBar() {
     <>
       <div ref={sentinelRef} className="absolute top-0 left-0 h-px w-px" aria-hidden />
       <header className="sticky top-0 sm:top-3 z-40 h-16 sm:h-[4.5rem] flex items-center">
+        {/* Geometry is identical in both states (no width/padding animation), so
+            nothing reflows on scroll; only the surface fades in. */}
         <div
-          className={`mx-auto w-full flex items-center gap-1 sm:gap-2 h-14 rounded-none sm:rounded-2xl border transition-[max-width,padding,background-color,border-color,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          className={`flex-1 min-w-0 flex items-center gap-1 sm:gap-2 h-14 -mx-5 px-5 sm:-mx-3 sm:px-3 rounded-none sm:rounded-2xl border transition-[background-color,border-color,box-shadow] duration-300 ease-out ${
             condensed
-              ? "max-w-[900px] px-2 sm:px-3 bg-panel/95 border-line shadow-[0_10px_30px_-14px_rgb(16_24_40/0.28)] max-sm:border-x-0 max-sm:border-t-0 max-sm:-mx-5 max-sm:w-[calc(100%+2.5rem)] max-sm:px-5"
-              : "max-w-full px-0 border-transparent"
+              ? "bg-panel/95 border-line shadow-[0_10px_30px_-14px_rgb(16_24_40/0.28)] max-sm:border-x-transparent max-sm:border-t-transparent"
+              : "bg-transparent border-transparent"
           }`}
         >
           <Link prefetch={false} href="/" className="flex items-center gap-2.5 shrink-0 rounded-lg pr-2" title="Home">
             <Logo size={30} />
-            <span className="text-[14.5px] font-semibold tracking-[-0.01em] text-fg whitespace-nowrap">
+            <span className="max-[359px]:sr-only text-[14.5px] font-semibold tracking-[-0.01em] text-fg whitespace-nowrap">
               Biprodeep Bose<span className="hidden lg:inline mono text-[11.5px] font-normal text-faint ml-1.5">/console</span>
             </span>
           </Link>

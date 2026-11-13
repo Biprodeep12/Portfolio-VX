@@ -78,7 +78,7 @@ export default function Home() {
 
         {/* Metric strip */}
         <div data-reveal className="mt-20 sm:mt-24 panel grid grid-cols-2 lg:grid-cols-4 overflow-hidden">
-          <div className="px-6 py-6">
+          <div className="px-4 sm:px-6 py-5 sm:py-6">
             <div className="label">Experience</div>
             <div className="mt-2 flex items-baseline gap-1">
               {PRO.years > 0 && (
@@ -94,14 +94,14 @@ export default function Home() {
               Professional, since {FIRST_ROLE}
             </div>
           </div>
-          <div className="px-6 py-6 border-l border-line">
+          <div className="px-4 sm:px-6 py-5 sm:py-6 border-l border-line">
             <div className="label">Merged PRs at work</div>
             <div className="mt-2 text-[28px] leading-none font-semibold tracking-tight tabular-nums">
               <CountUp value={TOTAL_PRS} />
             </div>
             <div className="mt-1.5 text-[12px] text-muted">Across {TOTAL_REPOS} production repos</div>
           </div>
-          <div className="px-6 py-6 border-t lg:border-t-0 lg:border-l border-line">
+          <div className="px-4 sm:px-6 py-5 sm:py-6 border-t lg:border-t-0 lg:border-l border-line">
             <div className="label">Live projects</div>
             <div className="mt-2 flex items-center gap-3">
               <span className="text-[28px] leading-none font-semibold tracking-tight tabular-nums">
@@ -115,7 +115,7 @@ export default function Home() {
             </div>
             <div className="mt-1.5 text-[12px] text-muted">{PROJECTS.map((p) => p.name).join(" · ")}</div>
           </div>
-          <div className="px-6 py-6 border-t border-l lg:border-t-0 border-line">
+          <div className="px-4 sm:px-6 py-5 sm:py-6 border-t border-l lg:border-t-0 border-line">
             <div className="label">Stack</div>
             <div className="mt-2 text-[28px] leading-none font-semibold tracking-tight tabular-nums">
               <CountUp value={STACK_COUNT} />
@@ -272,7 +272,7 @@ export default function Home() {
                     ),
                   },
                 ].map((r, i) => (
-                  <div key={r.k} className={`px-7 sm:px-9 py-4 border-line ${i % 2 ? "border-l" : ""} ${i >= 2 ? "border-t lg:border-t-0" : ""} ${i === 2 ? "lg:border-l" : ""}`}>
+                  <div key={r.k} className={`px-5 sm:px-9 py-4 border-line ${i % 2 ? "border-l" : ""} ${i >= 2 ? "border-t lg:border-t-0" : ""} ${i === 2 ? "lg:border-l" : ""}`}>
                     <dt className="label mb-0.5">{r.k}</dt>
                     <dd className="text-fg min-h-6 flex items-center">{r.v}</dd>
                   </div>
