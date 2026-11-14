@@ -9,6 +9,12 @@ import { useConsole } from "./Shell";
 
 /* ================= Projects section ================= */
 
+// The live path through each project, from its code (decorative strip on cards).
+const PATHS: Record<string, string[]> = {
+  strux: ["dashboard", "API routes", "AWS SDK", "EC2 agent"],
+  mapgeox: ["browser", "Socket.IO", "bus sim", "MongoDB"],
+};
+
 type View = "cards" | "table";
 
 export function ProjectsView() {
@@ -160,6 +166,22 @@ export function ProjectsView() {
                   <Status>{p.status}</Status>
                 </div>
                 <p className="mt-3 text-fg-2 leading-relaxed line-clamp-2">{p.description}</p>
+                {PATHS[p.id] && (
+                  <div className="mt-4 hidden sm:flex items-center" aria-hidden>
+                    {PATHS[p.id].map((h, k, all) => (
+                      <span key={h} className="flex items-center min-w-0">
+                        <span className="h-6 px-2 inline-flex items-center rounded-[5px] border border-line bg-subtle mono text-[10.5px] text-fg-2 whitespace-nowrap transition-colors group-hover:border-line-strong">
+                          {h}
+                        </span>
+                        {k < all.length - 1 && (
+                          <span className="edge relative w-5 lg:w-7 h-px shrink-0">
+                            <span className="packet absolute -top-[2.5px] size-1.5 rounded-full bg-accent" style={{ animationDelay: `${k * 0.4}s` }} />
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="mt-4">
                   <Chips items={p.stack} />
                 </div>

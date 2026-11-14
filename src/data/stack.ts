@@ -65,7 +65,6 @@ export const LAYERS: Layer[] = [
       { name: "MySQL", used: ["saffronstays"] },
       { name: "Elasticsearch", used: ["saffronstays"], note: "search" },
       { name: "Firebase", used: ["strux", "mapgeox", "cotr"] },
-      { name: "Redis", used: ["mapgeox"], note: "API cache" },
       { name: "PostgreSQL", used: [] },
     ],
   },

@@ -18,6 +18,7 @@ ${factSheet()}
 ## Pages
 
 - [Home](${site}/): overview, projects, experience, skills, contact
+- [Blueprint](${site}/blueprint/): learn system design through one interactive design for 1M monthly users (requirements, estimates, every layer, scaling, trade-offs, glossary)
 - [Resume (PDF)](${site}/Resume.pdf)
 ${PROJECTS.map((p) => `- [${p.name}](${site}/projects/${p.id}/): ${p.title}`).join("\n")}
 

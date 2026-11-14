@@ -223,6 +223,7 @@ export const SERVICES = [
     description:
       "React & Next.js interfaces crafted with TypeScript. Reusable components, clean structure, and thoughtful UX built for growth. I value readability, scalability, and smooth engineering workflows across the stack.",
     tags: ["React", "Next.js", "TypeScript"],
+    proof: "React and Next.js across both roles and every project here, plus a React Native app shipped to Google Play.",
   },
   {
     id: "svc-devops",
@@ -230,6 +231,7 @@ export const SERVICES = [
     description:
       "Designing highly available backend architecture and automated cloud workflows. Experience setting up containerized services, automated CI/CD pipelines, and secure deployment infrastructure.",
     tags: ["Docker", "CI/CD Pipelines", "AWS/GCP", "Linux"],
+    proof: "STRUX provisions a VPC, an EC2 server, a DNS record and HTTPS in one flow; at work, Dockerised services shipped through CI/CD.",
   },
   {
     id: "svc-perf",
@@ -237,6 +239,7 @@ export const SERVICES = [
     description:
       "Optimizing load times and interactivity. Smaller bundles, faster first paint, fewer re-renders. Aiming for responsive 60fps experiences that feel effortless.",
     tags: ["Bundles", "First paint", "60fps"],
+    proof: "Took this site's mobile load time (LCP) from 7.2 s to 1.4 s by cutting render-blocking work and oversized images.",
   },
 ];
 
@@ -270,7 +273,6 @@ export const SECTIONS = [
   { id: "deployments", label: "Deployments", api: "DescribeDeployments" },
   { id: "stack", label: "Stack", api: "GetStack" },
   { id: "about", label: "Account", api: "GetAccount" },
-  { id: "notes", label: "Notes", api: "ListNotes" },
   { id: "faq", label: "FAQ", api: "DescribeFaq" },
   { id: "contact", label: "Support", api: "OpenSupportCenter" },
 ] as const;

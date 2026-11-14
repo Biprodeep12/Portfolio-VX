@@ -1,16 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Check, Copy, Mail, RotateCcw, Send } from "lucide-react";
+import { Briefcase, Check, Copy, Hand, Handshake, Mail, PenTool, RotateCcw, Send } from "lucide-react";
 import { PROFILE } from "@/data/profile";
 import { audit } from "./audit";
 import { useToast } from "./client";
 
 const TYPES = [
-  { id: "job", label: "Job opportunity", hint: "Roles, interviews, referrals" },
-  { id: "freelance", label: "Freelance", hint: "A project with a scope" },
-  { id: "collab", label: "Collaboration", hint: "Build something together" },
-  { id: "hello", label: "Just saying hi", hint: "No agenda needed" },
+  { id: "job", label: "Job opportunity", hint: "Roles, interviews, referrals", icon: Briefcase },
+  { id: "freelance", label: "Freelance", hint: "A project with a scope", icon: PenTool },
+  { id: "collab", label: "Collaboration", hint: "Build something together", icon: Handshake },
+  { id: "hello", label: "Just saying hi", hint: "No agenda needed", icon: Hand },
 ];
 
 const MAX = 1000;
@@ -111,7 +111,7 @@ export function CaseForm() {
   const remaining = MAX - d.message.length;
 
   return (
-    <div className="panel grid grid-cols-1 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] overflow-hidden">
+    <div className="panel overflow-hidden flex flex-col">
       {status === "sent" ? (
         <div className="p-6 sm:p-8 flex flex-col justify-center anim-in" role="status">
           <span className="grid place-items-center size-10 rounded-full bg-ok-soft text-ok mb-4 pop">
@@ -145,9 +145,10 @@ export function CaseForm() {
         >
           <fieldset onFocus={() => setFocus("type")} onBlur={() => setFocus(null)}>
             <legend className="label mb-2">What&apos;s it about</legend>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5" role="radiogroup">
+            <div className="grid grid-cols-2 xl:grid-cols-4 gap-2" role="radiogroup">
               {TYPES.map((t) => {
                 const on = d.type === t.id;
+                const Icon = t.icon;
                 return (
                   <button
                     type="button"
@@ -155,12 +156,13 @@ export function CaseForm() {
                     aria-checked={on}
                     key={t.id}
                     onClick={() => set("type")(t.id)}
-                    className={`text-left rounded-md border px-2.5 py-2 cursor-pointer transition-all duration-200 ${
-                      on ? "border-fg bg-fg text-panel shadow-sm" : "border-line text-fg-2 hover:bg-hover hover:border-line-strong"
+                    className={`text-left rounded-md border px-3 py-2.5 cursor-pointer transition-colors duration-200 ${
+                      on ? "border-accent bg-accent-soft" : "border-line hover:bg-hover hover:border-line-strong"
                     }`}
                   >
-                    <span className="block text-[12.5px] font-medium leading-4">{t.label}</span>
-                    <span className={`block text-[11px] leading-4 mt-0.5 ${on ? "opacity-70" : "text-muted"}`}>{t.hint}</span>
+                    <Icon className={`size-4 mb-1.5 ${on ? "text-accent" : "text-muted"}`} />
+                    <span className="block text-[13px] font-medium leading-4 text-fg">{t.label}</span>
+                    <span className="block text-[11.5px] leading-4 mt-1 text-muted">{t.hint}</span>
                   </button>
                 );
               })}
@@ -251,15 +253,17 @@ export function CaseForm() {
       )}
 
       {/* Live request preview */}
-      <div className="border-t lg:border-t-0 lg:border-l border-line bg-code flex flex-col">
-        <div className="flex items-center justify-between h-12 px-6 border-b border-line">
-          <span className="mono text-muted text-[11.5px]">request preview</span>
+      <details className="group border-t border-line bg-code" open>
+        <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer flex items-center justify-between h-11 px-6 sm:px-8 border-b border-line">
+          <span className="mono text-muted text-[11.5px]">
+            <span className="inline-block transition-transform duration-200 group-open:rotate-90">›</span> request preview
+          </span>
           <span className="flex items-center gap-1.5 mono text-[11px] text-faint">
             <span className={`size-1.5 rounded-full ${status === "sent" ? "bg-ok" : "bg-accent caret-blink"}`} />
             {status === "sent" ? "201 created" : "live"}
           </span>
-        </div>
-        <pre className="mono text-[12px] leading-[1.8] p-6 text-fg-2 whitespace-pre-wrap break-words flex-1">
+        </summary>
+        <pre className="mono text-[12px] leading-[1.8] px-6 sm:px-8 py-5 text-fg-2 whitespace-pre-wrap break-words">
           <span className="text-accent font-semibold">POST</span> /v1/support/cases{"\n"}
           <span className="text-muted">Host:</span> biprodeep.me{"\n"}
           <span className="text-muted">Content-Type:</span> application/json{"\n\n"}
@@ -289,7 +293,7 @@ export function CaseForm() {
             </span>
           )}
         </pre>
-      </div>
+      </details>
     </div>
   );
 }

@@ -1,11 +1,10 @@
-import { ArrowUpRight, FileText, Github, Instagram, Linkedin, Mail } from "lucide-react";
-import { ABOUT, BUILDING_SINCE, EXPERIENCE, FIRST_ROLE, FIRST_ROLE_START, PROFILE, PROJECTS, SERVICES, durationSince, metricsFor } from "@/data/profile";
+import { ArrowUpRight, Github, Lightbulb, Linkedin } from "lucide-react";
+import { ABOUT, BUILDING_SINCE, EXPERIENCE, FIRST_ROLE, FIRST_ROLE_START, PROFILE, PROJECTS, SECTIONS, SERVICES, durationSince } from "@/data/profile";
 import { Chips, Section, Status } from "@/components/ui";
 import { CopyButton, CopyField } from "@/components/client";
+import { SupportChannels } from "@/components/Support";
 import { Frame } from "@/components/Frame";
 import { GitHubActivity } from "@/components/GitHubActivity";
-import { NoteList } from "@/components/NoteList";
-import { NOTES } from "@/data/notes";
 import { FAQ } from "@/data/faq";
 import { TESTIMONIALS } from "@/data/testimonials";
 import { ChevronRight } from "lucide-react";
@@ -16,18 +15,12 @@ import { CountUp, HalftonePortrait } from "@/components/Widgets";
 import { StackEditorial } from "@/components/StackEditorial";
 import { LAYERS, STACK_COUNT } from "@/data/stack";
 import { DeploymentTimeline } from "@/components/Timeline";
+import { BlueprintTeaser } from "@/components/BlueprintTeaser";
+import { ServiceViz } from "@/components/ServiceViz";
 
 const TOTAL_PRS = EXPERIENCE.reduce((n, r) => n + (r.mergedPRs ?? 0), 0);
 const TOTAL_REPOS = EXPERIENCE.reduce((n, r) => n + (r.repos ?? 0), 0);
 const SERVICE_PATHS = ["svc/frontend", "svc/infra", "svc/perf"];
-
-const CHANNELS = [
-  { name: "Resume", icon: FileText, value: "Resume.pdf", href: "/Resume.pdf", copy: `${PROFILE.site}/Resume.pdf` },
-  { name: "Email", icon: Mail, value: PROFILE.email, href: `mailto:${PROFILE.email}`, copy: PROFILE.email },
-  { name: "GitHub", icon: Github, value: "Biprodeep12", href: PROFILE.github, copy: PROFILE.github },
-  { name: "LinkedIn", icon: Linkedin, value: "biprodeep-bose", href: PROFILE.linkedin, copy: PROFILE.linkedin },
-  { name: "Instagram", icon: Instagram, value: "@bosebd", href: PROFILE.instagram, copy: PROFILE.instagram },
-];
 
 export default function Home() {
   // Recomputed on every (daily) regeneration, so the numbers stay true.
@@ -76,8 +69,28 @@ export default function Home() {
           </div>
         </header>
 
+        <nav aria-label="On this page" className="hero-in mt-12 flex flex-wrap gap-1.5" style={{ ["--d" as string]: "260ms" }}>
+          {SECTIONS.map((sec, i) => (
+            <a
+              key={sec.id}
+              href={`#${sec.id}`}
+              className="h-8 px-3 inline-flex items-center gap-2 rounded-[5px] border border-line bg-panel text-[13px] text-fg-2 hover:border-line-strong hover:text-fg transition-colors"
+            >
+              <span className="mono text-[11px] text-faint">{String(i + 1).padStart(2, "0")}</span>
+              {sec.label}
+            </a>
+          ))}
+          <a
+            href="/blueprint/"
+            className="h-8 px-3 inline-flex items-center gap-2 rounded-[5px] border border-accent/40 bg-accent-soft text-[13px] text-fg hover:border-accent transition-colors"
+          >
+            <span className="mono text-[11px] text-accent">→</span>
+            Blueprint
+          </a>
+        </nav>
+
         {/* Metric strip */}
-        <div data-reveal className="mt-20 sm:mt-24 panel grid grid-cols-2 lg:grid-cols-4 overflow-hidden">
+        <div data-reveal className="mt-10 sm:mt-12 panel grid grid-cols-2 lg:grid-cols-4 overflow-hidden">
           <div className="px-4 sm:px-6 py-5 sm:py-6">
             <div className="label">Experience</div>
             <div className="mt-2 flex items-baseline gap-1">
@@ -146,23 +159,27 @@ export default function Home() {
           description="The three things I get called in for."
           actions={<span className="text-[12px] text-muted">3 of 3 healthy</span>}
         >
-          <div className="panel divide-y divide-line overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {SERVICES.map((s, i) => (
-              <article key={s.id} style={{ ["--d" as string]: `${i * 90}ms` }} className="rise grid grid-cols-1 md:grid-cols-[170px_minmax(0,1fr)_240px] gap-3 md:gap-10 px-6 sm:px-8 py-7 hover:bg-hover/60 transition-colors">
-                <div className="mono text-[12px] text-muted pt-0.5">
+              <article key={s.id} style={{ ["--d" as string]: `${i * 90}ms` }} className="rise lift panel p-5 sm:p-6 flex flex-col">
+                <div className="mono text-[12px] text-muted">
                   <span className="text-faint">0{i + 1} </span>
                   {SERVICE_PATHS[i]}
                 </div>
-                <div>
-                  <h3 className="font-semibold text-[15px] tracking-tight text-fg mb-1">{s.name}</h3>
-                  <p className="text-muted leading-relaxed max-w-[560px]">{s.description}</p>
+                <h3 className="mt-2 font-semibold text-[16px] tracking-tight text-fg">{s.name}</h3>
+                <p className="mt-2 text-[14px] text-fg-2 leading-relaxed">{s.description}</p>
+                <ServiceViz id={s.id} />
+                <div className="mt-5 pl-3 border-l-2 border-accent/60 flex-1">
+                  <div className="mono text-[10.5px] uppercase tracking-[0.08em] text-accent">In practice</div>
+                  <p className="mt-1 text-[13.5px] text-fg-2 leading-relaxed">{s.proof}</p>
                 </div>
-                <div className="md:pt-0.5">
+                <div className="mt-4">
                   <Chips items={s.tags} />
                 </div>
               </article>
             ))}
           </div>
+          <BlueprintTeaser />
         </Section>
 
         {/* 02 Projects */}
@@ -199,15 +216,25 @@ export default function Home() {
                       </div>
                       <Status>{r.status}</Status>
                     </div>
-                    {metricsFor(r).length > 0 && (
-                      <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1" aria-label="Measured impact">
-                        {metricsFor(r).map((m) => (
-                          <li key={m} className="mono text-[11.5px] text-fg-2 flex items-center gap-1.5">
-                            <span className="size-1 rounded-full bg-accent" aria-hidden />
-                            {m}
-                          </li>
+                    {r.mergedPRs ? (
+                      <dl className="mt-4 grid grid-cols-3 gap-px bg-line rounded-md overflow-hidden border border-line" aria-label="Measured impact">
+                        {[
+                          { k: "merged PRs", v: r.mergedPRs.toLocaleString("en-US") },
+                          { k: "commits", v: `${(r.commits ?? 0).toLocaleString("en-US")}+` },
+                          { k: "repositories", v: String(r.repos ?? 0) },
+                        ].map((m) => (
+                          <div key={m.k} className="bg-panel px-3 py-2.5">
+                            <dd className="text-[18px] leading-none font-semibold tabular-nums text-fg">{m.v}</dd>
+                            <dt className="mt-1 mono text-[10.5px] text-muted">{m.k}</dt>
+                          </div>
                         ))}
-                      </ul>
+                      </dl>
+                    ) : null}
+                    {r.scope && (
+                      <div className="mt-4 pl-3 border-l-2 border-accent/60">
+                        <div className="mono text-[10.5px] uppercase tracking-[0.08em] text-accent">Scope</div>
+                        <p className="mt-0.5 text-[13.5px] text-fg-2">{r.scope}</p>
+                      </div>
                     )}
                     <p className="mt-3 text-muted leading-relaxed">{r.description}</p>
                     <div className="mt-3">
@@ -304,23 +331,8 @@ export default function Home() {
           )}
         </Section>
 
-        {/* 06 Notes */}
-        <Section
-          id="notes"
-          index="06"
-          title="Notes"
-          description="How things were built and why: numbers, decisions, and what I'd change."
-          actions={
-            <a href="/notes/" className="btn h-7 px-2.5">
-              All notes <ArrowUpRight className="size-3.5" />
-            </a>
-          }
-        >
-          <NoteList notes={NOTES.slice(0, 3)} />
-        </Section>
-
-        {/* 07 FAQ */}
-        <Section id="faq" index="07" title="FAQ" description="Quick answers, based on work he has actually shipped.">
+        {/* 06 FAQ */}
+        <Section id="faq" index="06" title="FAQ" description="Quick answers, based on work he has actually shipped.">
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
@@ -331,42 +343,32 @@ export default function Home() {
               }),
             }}
           />
-          <div className="panel divide-y divide-line overflow-hidden">
+          <p className="mb-4 flex items-start gap-2 text-[13px] text-fg-2 leading-relaxed">
+            <Lightbulb className="size-4 mt-0.5 text-accent shrink-0" aria-hidden />
+            <span>
+              <span className="font-medium text-fg">Not here? </span>
+              Ask the assistant in the bottom-right corner; it answers from the same facts as this page.
+            </span>
+          </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start">
             {FAQ.map((f, i) => (
-              <details key={f.q} className="rise group" style={{ ["--d" as string]: `${i * 50}ms` }}>
-                <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer flex items-center gap-4 px-6 sm:px-8 py-5 hover:bg-hover/60 transition-colors">
+              <details key={f.q} className="rise group panel overflow-hidden" style={{ ["--d" as string]: `${i * 50}ms` }}>
+                <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer flex items-center gap-3 px-5 sm:px-6 py-4 hover:bg-hover/60 transition-colors">
+                  <span className="mono text-[11px] text-faint tabular-nums w-5 shrink-0">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="font-medium text-fg flex-1">{f.q}</span>
                   <ChevronRight className="size-4 text-muted shrink-0 transition-transform duration-200 group-open:rotate-90" />
-                  <span className="font-medium text-fg">{f.q}</span>
                 </summary>
-                <p className="pl-[3.75rem] sm:pl-[4.25rem] pr-6 sm:pr-8 pb-6 -mt-1 text-fg-2 leading-relaxed max-w-3xl">{f.a}</p>
+                <p className="pl-[3.25rem] sm:pl-[3.5rem] pr-5 sm:pr-6 pb-5 -mt-1 text-[14px] text-fg-2 leading-relaxed">{f.a}</p>
               </details>
             ))}
           </div>
         </Section>
 
-        {/* 08 Support */}
-        <Section id="contact" index="08" title="Support" description="Opportunities, side projects, or just a hello.">
-          <CaseForm />
-          <div className="mt-6 panel grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[0.85fr_1.45fr_1fr_1fr_0.9fr] gap-px bg-line overflow-hidden">
-            {CHANNELS.map((c, i) => {
-              const Icon = c.icon;
-              const external = !c.href.startsWith("mailto:");
-              return (
-                <div
-                  key={c.name}
-                  className={`flex items-center gap-3 px-5 h-[4.5rem] bg-panel hover:bg-hover transition-colors ${
-                    i === CHANNELS.length - 1 && CHANNELS.length % 2 ? "sm:col-span-2 lg:col-span-1" : ""
-                  }`}
-                >
-                  <Icon className="size-4 text-muted shrink-0" />
-                  <a href={c.href} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})} className="min-w-0 flex-1 group">
-                    <span className="block text-[11.5px] text-muted leading-4">{c.name}</span>
-                    <span className="block text-fg group-hover:text-accent truncate transition-colors">{c.value}</span>
-                  </a>
-                  <CopyButton value={c.copy} label={`${c.name} copied`} />
-                </div>
-              );
-            })}
+        {/* 07 Support */}
+        <Section id="contact" index="07" title="Support" description="Opportunities, side projects, or just a hello. Pick whichever way suits you.">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)] gap-6 items-start">
+            <SupportChannels />
+            <CaseForm />
           </div>
         </Section>
 

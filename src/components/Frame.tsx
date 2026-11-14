@@ -46,6 +46,9 @@ function SiteFooter() {
         <SessionMeter />
       </span>
       <span className="md:text-right flex md:justify-end items-center gap-4">
+        <Link prefetch={false} href="/blueprint/" className="link">
+          Blueprint
+        </Link>
         <Link prefetch={false} href="/notes/" className="link">
           Notes
         </Link>

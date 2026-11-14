@@ -95,7 +95,7 @@ export function Terminal() {
               {[
                 ["whoami", "who owns this account"],
                 ["ls <what>", "projects · deployments · stack"],
-                ["open <id>", "open a project panel, or `open resume`"],
+                ["open <id>", "open a project panel, `open resume` or `open blueprint`"],
                 ["can <skill>", "check a technology against the stack"],
                 ["ask <question>", "ask the AI assistant"],
                 ["tldr", "the whole portfolio on one screen"],
@@ -181,7 +181,10 @@ export function Terminal() {
           } else if (PROJECTS.some((p) => p.id === id)) {
             push("out", <span className="text-[#9aa3af]">opening prj-{id}…</span>);
             openProject(id);
-          } else push("err", `open: '${arg || "?"}' not found. try: ${PROJECTS.map((p) => p.id).join(", ")}, resume`);
+          } else if (id === "blueprint") {
+            push("out", <span className="text-[#9aa3af]">opening /blueprint…</span>);
+            window.location.assign("/blueprint/");
+          } else push("err", `open: '${arg || "?"}' not found. try: ${PROJECTS.map((p) => p.id).join(", ")}, resume, blueprint`);
           break;
         }
         case "can": {

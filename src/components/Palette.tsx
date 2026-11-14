@@ -36,6 +36,7 @@ export default function CommandPalette({ onClose }: { onClose: () => void }) {
         run: () => openProject(p.id),
       })),
       { id: "tldr", label: "TL;DR: one-screen summary", hint: "Action", icon: FileText, run: openTldr },
+      { id: "blueprint", label: "Blueprint: learn system design", hint: "Page", icon: Boxes, run: () => window.location.assign("/blueprint/") },
       ...NOTES.map((n) => ({ id: n.slug, label: n.title, hint: "Note", icon: FileText, run: () => window.location.assign(`/notes/${n.slug}/`) })),
       { id: "assistant", label: "Ask the AI assistant", hint: "Action", icon: Hash, run: () => openChat() },
       { id: "resume", label: "Preview resume", hint: "Document", icon: FileText, run: openResume },

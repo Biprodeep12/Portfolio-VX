@@ -390,3 +390,28 @@ html {
 .trace-in { animation: trace-in 260ms var(--ease-out) both; }
 @keyframes trace-in { from { opacity: 0; transform: translateX(-4px); } }
 @media (prefers-reduced-motion: reduce) { .trace-in { animation: none; } }
+
+/* ================= Blueprint ================= */
+/* Active flow edges: dashes travel along the path */
+.bp-flow { stroke-dasharray: 6 6; animation: bp-dash 0.7s linear infinite; }
+@keyframes bp-dash { to { stroke-dashoffset: -12; } }
+/* A request "arriving" at a component */
+.bp-pulse { transform-box: fill-box; transform-origin: center; animation: bp-pulse 1.3s var(--ease-out) infinite; }
+@keyframes bp-pulse {
+  from { opacity: 0.8; transform: scale(1); }
+  to { opacity: 0; transform: scale(1.14, 1.3); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bp-flow, .bp-pulse { animation: none; }
+}
+
+/* Home services: a request hopping build → CDN → server → browser */
+.svc-runner { animation: svc-run 4.8s var(--ease-out) infinite; left: 12.5%; }
+@keyframes svc-run {
+  0%, 18% { left: 12.5%; }
+  25%, 43% { left: 37.5%; }
+  50%, 68% { left: 62.5%; }
+  75%, 93% { left: 87.5%; }
+  100% { left: 12.5%; }
+}
+@media (prefers-reduced-motion: reduce) { .svc-runner { animation: none; } }

@@ -411,10 +411,11 @@ function Modal({
 
 /* ---------------- Header ---------------- */
 
-const NAV_LINKS = [
+const NAV_LINKS: { id: string; label: string; href?: string }[] = [
   { id: "projects", label: "Work" },
   { id: "deployments", label: "Experience" },
-  { id: "notes", label: "Notes" },
+  { id: "blueprint", label: "Blueprint", href: "/blueprint/" },
+  { id: "notes", label: "Notes", href: "/notes/" },
   { id: "contact", label: "Contact" },
 ];
 
@@ -441,7 +442,7 @@ export function ConsoleBar() {
   // Highlight the nav link for the section currently in view.
   useEffect(() => {
     if (pathname !== "/") {
-      setActive(pathname.startsWith("/notes") ? "notes" : pathname.startsWith("/projects") ? "projects" : null);
+      setActive(pathname.startsWith("/notes") ? "notes" : pathname.startsWith("/projects") ? "projects" : pathname.startsWith("/blueprint") ? "blueprint" : null);
       return;
     }
     const ids = new Set(NAV_LINKS.map((l) => l.id));
@@ -483,7 +484,7 @@ export function ConsoleBar() {
                 <Link
                   prefetch={false}
                   key={l.id}
-                  href={`/#${l.id}`}
+                  href={l.href ?? `/#${l.id}`}
                   aria-current={on ? "location" : undefined}
                   className={`relative h-9 px-3 grid place-items-center rounded-lg text-[13.5px] transition-colors ${
                     on ? "text-fg font-medium" : "text-muted hover:text-fg hover:bg-hover"
