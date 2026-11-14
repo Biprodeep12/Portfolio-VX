@@ -41,12 +41,12 @@ export const FAQ: Faq[] = [
   },
   {
     q: "Does he work with AI?",
-    a: "Practically, yes: an AI assistant inside STRUX, a route assistant in MapGeox that answers from live data via tool calls, the assistant on this site (with an offline fallback), and Strux, a local-only desktop assistant.",
+    a: "Practically, yes: an AI assistant inside STRUX, a route assistant in MapGeox that answers from live data via tool calls, the assistant on this site (with an offline fallback), and a separate local-only desktop assistant (not the STRUX cloud platform).",
     keys: ["ai", "llm", "machine learning", "gpt", "assistant", "openrouter"],
   },
   {
     q: "How does he approach performance?",
-    a: "Measure first, then fix the biggest cost. This site went from a 7.2 s to a 1.4 s mobile LCP; the full write-up, including what turned out to be a measurement artifact, is in Notes.",
+    a: "Measure first, then fix the biggest cost. This site went from a 7.2 s to a 1.4 s mobile LCP by cutting render-blocking work and oversized images.",
     keys: ["performance", "speed", "fast", "lighthouse", "optimi"],
   },
   {

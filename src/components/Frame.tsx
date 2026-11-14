@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { PROFILE } from "@/data/profile";
-import type { Block } from "@/data/notes";
 import { ConsoleBar } from "./Shell";
 import { SessionMeter } from "./Widgets";
 
@@ -49,9 +48,6 @@ function SiteFooter() {
         <Link prefetch={false} href="/blueprint/" className="link">
           Blueprint
         </Link>
-        <Link prefetch={false} href="/notes/" className="link">
-          Notes
-        </Link>
         <a href="#" className="link">
           Back to top ↑
         </a>
@@ -80,80 +76,5 @@ export function Crumbs({ items }: { items: { label: string; href?: string }[] })
         </span>
       ))}
     </nav>
-  );
-}
-
-/** Renders note/case-study blocks with inline `code` and **bold**. */
-function inline(text: string) {
-  return text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g).map((part, i) =>
-    part.startsWith("`") ? (
-      <code key={i} className="mono text-[0.9em] px-1 py-px rounded bg-hover">
-        {part.slice(1, -1)}
-      </code>
-    ) : part.startsWith("**") ? (
-      <strong key={i} className="font-semibold text-fg">
-        {part.slice(2, -2)}
-      </strong>
-    ) : (
-      part
-    ),
-  );
-}
-
-export function Prose({ blocks }: { blocks: Block[] }) {
-  return (
-    <div className="flex flex-col gap-4 text-[15px] leading-[1.75] text-fg-2">
-      {blocks.map((b, i) => {
-        switch (b.t) {
-          case "h2":
-            return (
-              <h2 key={i} className="mt-4 text-[17px] font-semibold tracking-tight text-fg">
-                {b.text}
-              </h2>
-            );
-          case "ul":
-            return (
-              <ul key={i} className="flex flex-col gap-2 pl-5 list-disc marker:text-faint">
-                {b.items.map((it, j) => (
-                  <li key={j}>{inline(it)}</li>
-                ))}
-              </ul>
-            );
-          case "quote":
-            return (
-              <blockquote key={i} className="border-l-2 border-accent pl-4 text-fg">
-                {inline(b.text)}
-              </blockquote>
-            );
-          case "table":
-            return (
-              <div key={i} className="panel overflow-x-auto my-1">
-                <table className="tbl text-[13.5px]">
-                  <thead>
-                    <tr>
-                      {b.head.map((h, j) => (
-                        <th key={j}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {b.rows.map((r, j) => (
-                      <tr key={j}>
-                        {r.map((c, k) => (
-                          <td key={k} className={k === 0 ? "text-fg font-medium" : "tabular-nums"}>
-                            {c}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            );
-          default:
-            return <p key={i}>{inline(b.text)}</p>;
-        }
-      })}
-    </div>
   );
 }

@@ -56,7 +56,7 @@ export function DeploymentTimeline() {
           </div>
           {roles.map((r) => {
             const start = toIdx(r.start);
-            const months = nowIdx - start + 1;
+            const months = Math.max(1, nowIdx - start); // same count as the headline experience figure
             return (
               <div key={r.id} style={{ ["--d" as string]: `${300 + roles.indexOf(r) * 180}ms` }} className="flex items-center h-14 border-b border-line last:border-b-0 border-dashed">
                 <div className="w-[var(--lane)] shrink-0 pr-3 sm:pr-4 min-w-0">

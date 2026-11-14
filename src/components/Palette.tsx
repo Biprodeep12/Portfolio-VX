@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Boxes, CornerDownLeft, ExternalLink, FileText, Github, Hash, Mail, Moon, Search, type LucideIcon } from "lucide-react";
 import { PROFILE, PROJECTS, SECTIONS } from "@/data/profile";
-import { NOTES } from "@/data/notes";
 import { useToast } from "./client";
 import { useConsole } from "./Shell";
 
@@ -37,7 +36,6 @@ export default function CommandPalette({ onClose }: { onClose: () => void }) {
       })),
       { id: "tldr", label: "TL;DR: one-screen summary", hint: "Action", icon: FileText, run: openTldr },
       { id: "blueprint", label: "Blueprint: learn system design", hint: "Page", icon: Boxes, run: () => window.location.assign("/blueprint/") },
-      ...NOTES.map((n) => ({ id: n.slug, label: n.title, hint: "Note", icon: FileText, run: () => window.location.assign(`/notes/${n.slug}/`) })),
       { id: "assistant", label: "Ask the AI assistant", hint: "Action", icon: Hash, run: () => openChat() },
       { id: "resume", label: "Preview resume", hint: "Document", icon: FileText, run: openResume },
       { id: "theme", label: "Toggle light / dark theme", hint: "Action", icon: Moon, run: toggleTheme },

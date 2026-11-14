@@ -415,7 +415,6 @@ const NAV_LINKS: { id: string; label: string; href?: string }[] = [
   { id: "projects", label: "Work" },
   { id: "deployments", label: "Experience" },
   { id: "blueprint", label: "Blueprint", href: "/blueprint/" },
-  { id: "notes", label: "Notes", href: "/notes/" },
   { id: "contact", label: "Contact" },
 ];
 
@@ -442,7 +441,7 @@ export function ConsoleBar() {
   // Highlight the nav link for the section currently in view.
   useEffect(() => {
     if (pathname !== "/") {
-      setActive(pathname.startsWith("/notes") ? "notes" : pathname.startsWith("/projects") ? "projects" : pathname.startsWith("/blueprint") ? "blueprint" : null);
+      setActive(pathname.startsWith("/projects") ? "projects" : pathname.startsWith("/blueprint") ? "blueprint" : null);
       return;
     }
     const ids = new Set(NAV_LINKS.map((l) => l.id));

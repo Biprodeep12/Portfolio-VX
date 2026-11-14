@@ -230,7 +230,7 @@ export const SERVICES = [
     name: "DevOps & Infrastructure",
     description:
       "Designing highly available backend architecture and automated cloud workflows. Experience setting up containerized services, automated CI/CD pipelines, and secure deployment infrastructure.",
-    tags: ["Docker", "CI/CD Pipelines", "AWS/GCP", "Linux"],
+    tags: ["Docker", "CI/CD Pipelines", "AWS", "Linux"],
     proof: "STRUX provisions a VPC, an EC2 server, a DNS record and HTTPS in one flow; at work, Dockerised services shipped through CI/CD.",
   },
   {
@@ -248,7 +248,7 @@ export const SKILLS: { group: string; prefix: string; items: string[] }[] = [
   {
     group: "Technologies",
     prefix: "tech",
-    items: ["React", "Next.js", "Node.js", "Express.js", "NestJS", "React Native", "Tailwind CSS", "Socket.IO", "LiveKit", "AWS", "GraphQL", "Redis", "Nginx", "Linux"],
+    items: ["React", "Next.js", "Node.js", "Express.js", "NestJS", "React Native", "Tailwind CSS", "Socket.IO", "LiveKit", "AWS", "GraphQL", "Nginx", "Linux"],
   },
   { group: "Databases", prefix: "db", items: ["MySQL", "PostgreSQL", "MongoDB", "Elasticsearch", "Firebase"] },
   { group: "Tools & Platforms", prefix: "tool", items: ["Git", "Github", "Docker", "Vercel", "Playwright", "Jest", "Figma"] },

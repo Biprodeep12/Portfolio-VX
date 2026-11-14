@@ -138,7 +138,7 @@ export function ResumePreview() {
 
 /* ---------------- TL;DR: the portfolio on one screen ---------------- */
 
-const KEY_STACK = ["TypeScript", "React", "Next.js", "Node.js", "Python", "Go", "AWS", "Docker", "Linux", "PostgreSQL", "MongoDB", "Redis"];
+const KEY_STACK = ["TypeScript", "React", "Next.js", "Node.js", "Python", "Go", "AWS", "Docker", "Linux", "MongoDB", "MySQL", "Socket.IO"];
 
 export function Tldr() {
   const { openResume, openChat } = useConsole();

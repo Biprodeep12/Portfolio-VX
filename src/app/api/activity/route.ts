@@ -1,4 +1,3 @@
-import { NOTES } from "@/data/notes";
 import { PROFILE } from "@/data/profile";
 
 // Feed for the header's notifications bell: real events only (notes
@@ -43,13 +42,6 @@ async function recentPushes(): Promise<ActivityEvent[]> {
 }
 
 export async function GET() {
-  const notes: ActivityEvent[] = NOTES.map((n) => ({
-    id: `note-${n.slug}`,
-    kind: "note",
-    title: `New ${n.kind === "ADR" ? "ADR" : "note"}: ${n.title}`,
-    href: `/notes/${n.slug}/`,
-    at: `${n.date}T09:00:00Z`,
-  }));
   const deploy: ActivityEvent = {
     id: `deploy-${BUILT_AT.slice(0, 10)}`,
     kind: "deploy",
@@ -58,6 +50,6 @@ export async function GET() {
     href: SHA ? `https://github.com/${USER}/Portfolio-VX/commit/${SHA}` : "/",
     at: BUILT_AT,
   };
-  const events = [...notes, deploy, ...(await recentPushes())].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 8);
+  const events = [deploy, ...(await recentPushes())].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 8);
   return Response.json({ events });
 }

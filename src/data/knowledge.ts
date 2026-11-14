@@ -207,7 +207,7 @@ const INTENTS: { keys: string[]; answer: () => LocalAnswer }[] = [
   {
     keys: ["this site", "this website", "website built", "how was this", "made this", "source"],
     answer: () => ({
-      text: "This site is a single-page Next.js app styled like a cloud console: Tailwind CSS, a real in-page shell, and no tracking. Try `help` in the terminal at the top.",
+      text: "This site is a Next.js app styled like a cloud console: Tailwind CSS, a real in-page shell, and no tracking. It also has /blueprint, an interactive guide to system design. Try `help` in the terminal at the top.",
     }),
   },
   { keys: ["thank", "thanks", "cheers", "great", "cool", "nice"], answer: () => ({ text: "Anytime! Anything else you'd like to know?" }) },
@@ -278,7 +278,6 @@ const TOPIC_KEYS: [string, string[]][] = [
   ["stack", ["skill", "stack", "tech", "language", "framework", "can he", "does he", "know", "use", "docker", "aws", "react", "next", "go", "python", "database"]],
   ["contact", ["contact", "hire", "email", "reach", "available", "availability", "freelance", "resume", "cv"]],
   ["about", ["who", "about", "background", "hobby", "free time", "philosophy", "approach", "location", "where"]],
-  ["notes", ["note", "blog", "write", "performance", "lighthouse", "adr", "lcp"]],
 ];
 
 /** Which parts of the portfolio a question touches; drives the chat's thinking trace. */
